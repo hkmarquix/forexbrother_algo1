@@ -2,7 +2,7 @@
 #property link "https://www.traland.com"
 #property strict
 
-void tf_closeAllOrders() {
+void tf_closeAllOrders(string symbol, int magicNumber) {
 
     for (int i = OrdersTotal() - 1; i >= 0; i--) {
         OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
@@ -15,11 +15,11 @@ void tf_closeAllOrders() {
 }
 
 
-void tf_createorder(int ordertype, double lots, string orderi, string tradeparam, double stoploss, double takeprofit, string entrymethod) {
+void tf_createorder(string symbol, int ordertype, double lots, string orderi, string tradeparam, double stoploss, double takeprofit, string entrymethod, int magicNumber) {
     int ticket = 0;
     double price = 0;
 
-    comment = tf_commentencode(EA_NAME entrymethod, orderi, tradeparam);
+    string comment = tf_commentencode(EA_NAME, entrymethod, orderi, tradeparam);
 
     if (ordertype == OP_BUY) {
         price = MarketInfo(symbol, MODE_ASK);
@@ -104,11 +104,12 @@ int tf_findMaxCommentOrder(string symbol, int magicnumber) {
         if (OrderMagicNumber() != magicnumber || OrderSymbol() != symbol)
             continue;
 
-        string[] commentd = tf_commentdecode(OrderComment());
+        string commentd[];
+        tf_commentdecode(OrderComment(), commentd);
         if (ArraySize(commentd) != 4)
             continue;
 
-        int curComment = StringToInteger(commentd[2]));
+        int curComment = StringToInteger(commentd[2]);
         if (curComment > maxComment)
             maxComment = curComment;
     }
@@ -135,11 +136,9 @@ string tf_commentencode(string message, string ea, int orderi, string remark)
     return comment;
 }
 
-string[] tf_commentdecode(string comment)
+void tf_commentdecode(string comment, string &result[])
 {
-    string result[];
-    int resk = StringSplit(comment, StringGetCharacter("|"), result);
-    return result;
+    int resk = StringSplit(comment, StringGetCharacter("|", 0), result);
 }
 
 int tf_countAllOrders(string symbol, int magicnumber) {

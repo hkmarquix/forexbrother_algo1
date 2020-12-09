@@ -16,7 +16,6 @@
 
 
 int default_magicNumber = 18291;
-string EA_NAME = "forexbrother_algo1";
 double closeprice = 0.0;
 bool keepsilence = false;
 
@@ -31,7 +30,6 @@ TradeHelper *curPairs[];
 int OnInit()
   {
 //---
-    recoverMode = 1;
     initCurPair();
 
    if (IsTesting())
@@ -55,6 +53,8 @@ int OnInit()
          tHelper.period = curperiod[i];
          tHelper.initHelper();
          curPairs[i] = tHelper;
+
+         Print("TradeHelper init: " + cur + "/" + curperiod[i]);
 
          if (IsTesting())
            break;
