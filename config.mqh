@@ -33,4 +33,5 @@ int currenttrademode = 2;
 int maxCommentLevel = 20;
 string curlist[] =  { "GBPUSD" };//, "EURJPY", "USDJPY", "USDCHF", "GBPAUD" };
 int curperiod[] = { PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15 };
+int curtrademode[] = { 1, 2, 2, 2, 2 };
 double curzone[] = { 450, 450, 450, 450, 450 };

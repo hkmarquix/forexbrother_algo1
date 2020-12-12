@@ -5,11 +5,11 @@
 #include "BasicEntry.mqh"
 #include "BaseSignal.mqh"
 #include "tradefunction.mqh"
+#include "Martingale.mqh"
 
 class TradeHelper {
     private:
             
-        int trademode;
         BaseSignal *signalist[];
         
         // 1 -> basic method
@@ -18,6 +18,7 @@ class TradeHelper {
         int totalsignal;
         int magicNumber;
         string symbol;
+        int trademode;
         int period;
         datetime stopcreateOrderuntil;
 
@@ -136,7 +137,24 @@ class TradeHelper {
 
     void checkRecoverAction()
     {
+        if (trademode == martingale)
+        {
+            Martingale *martin = new Martingale();
+            martin.period = period;
+            martin.symbol = symbol;
 
+            martin.doRecovery();
+
+            delete(martin);
+        } else if (trademode == zonecap)
+        {
+
+        } else if (trademode == simplestoploss)
+        {
+
+        } else if (trademode == signalclosesignal) {
+
+        }
     }
 
 
