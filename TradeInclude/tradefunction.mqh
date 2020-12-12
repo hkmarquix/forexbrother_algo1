@@ -151,3 +151,14 @@ int tf_countAllOrders(string symbol, int magicnumber) {
     return torder;
 }
 
+double tf_orderTotalProfit(string symbol, int magicnumber)
+{
+    double tprofit = 0;
+    for (int i = 0; i < OrdersTotal(); i++) {
+        OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
+        if (OrderMagicNumber() != magicnumber || OrderSymbol() != symbol)
+            continue;
+        tprofit += OrderProfit() + OrderSwap() + OrderCommission();
+    }
+    return tprofit;
+}

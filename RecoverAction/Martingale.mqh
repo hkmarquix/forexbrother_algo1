@@ -23,8 +23,59 @@ class Martingale : public BaseRecovery {
         
     }
 
-    doRecovery() {
+    int doRecovery() {
+        if (!of_selectlastorder(symbol, magicNumber))
+            return -1;
+
+        datetime lastopentime = OrderOpenTime();
+        if (lastopentime - TimeCurrent() > 30 * 60 * 60)
+            return -1;
+
+        double lastprice = OrderOpenPrice();
+
+        string param[];
+        tf_commentdecode(OrderComment(), param);
+
+        double cprice = 0;
+        if (OrderType() == OP_BUY) {
+            cprice = MarketInfo(symbol, MODE_ASK);
+        }
+        else
+        {
+            cprice = MarketInfo(symbol, MODE_BID);
+        }
+
+        double diff = (cprice - lastprice) * of_getcurrencrymultipier();
+
+        if (diff > 300)
+        {
+            int neworderi = StrToInteger(param[2]) + 1;
+            double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
+
+            tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, recoveryname, magicNumber);
+            return 1;
+        }
+
+        if (diff > 1000) {
+            tf_closeAllOrders(symbol, magicNumber);
+            return 2;
+        }
         
+        return -1;
     }
+
+
+    int takeProfit()
+    {
+        double tprofit = tf_orderTotalProfit(symbol, magicNumber);
+        int torder = tf_countAllOrders(symbol, magicNumber);
+        if (tprofit > targetProfitForEachOrder * torder) {
+            tf_closeAllOrders(symbol, magicNumber);
+            return 1;
+        }
+
+        return -1;
+    }
+
 
 };

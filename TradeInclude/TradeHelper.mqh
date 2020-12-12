@@ -142,9 +142,11 @@ class TradeHelper {
             Martingale *martin = new Martingale();
             martin.period = period;
             martin.symbol = symbol;
+            martin.magicNumber = magicNumber;
 
+            matrin.takeProfit();
             martin.doRecovery();
-
+            
             delete(martin);
         } else if (trademode == zonecap)
         {

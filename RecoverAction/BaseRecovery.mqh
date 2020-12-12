@@ -12,6 +12,7 @@ class BaseRecovery {
 
         int period;
         string symbol;
+        int magicNumber;
 
         int recoversignal;
 
@@ -33,5 +34,14 @@ class BaseRecovery {
 
     }
 
+    void selectLastOrder()
+    {
+
+    }
+
+    void takeProfit()
+    {
+        
+    }
 
 };

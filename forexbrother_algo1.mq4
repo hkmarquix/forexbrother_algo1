@@ -10,6 +10,7 @@
 
 #include "config.mqh"
 #include "TradeInclude\tradefunction.mqh"
+#include "TradeInclude\orderfunction.mqh"
 #include "TradeInclude\TradeHelper.mqh"
 
 
