@@ -27,6 +27,9 @@ class Martingale : public BaseRecovery {
         if (!of_selectlastorder(symbol, magicNumber))
             return -1;
 
+        if (OrderProfit() > 0)
+            return -1;
+
         datetime lastopentime = OrderOpenTime();
         if (lastopentime - TimeCurrent() > 30 * 60 * 60)
             return -1;
@@ -45,9 +48,9 @@ class Martingale : public BaseRecovery {
             cprice = MarketInfo(symbol, MODE_BID);
         }
 
-        double diff = (cprice - lastprice) * of_getcurrencrymultipier();
+        double diff = MathAbs(cprice - lastprice) * of_getcurrencrymultipier();
 
-        if (diff > 300)
+        if (diff > curzone)
         {
             int neworderi = StrToInteger(param[2]) + 1;
             double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
@@ -56,7 +59,8 @@ class Martingale : public BaseRecovery {
             return 1;
         }
 
-        if (diff > 1000) {
+        // stopping criteria , can be deleted
+        if (diff > curzone * 3) {
             tf_closeAllOrders(symbol, magicNumber);
             return 2;
         }

@@ -20,6 +20,7 @@ class TradeHelper {
         string symbol;
         int trademode;
         int period;
+        int curzone;
         datetime stopcreateOrderuntil;
 
     TradeHelper() {
@@ -143,14 +144,22 @@ class TradeHelper {
             martin.period = period;
             martin.symbol = symbol;
             martin.magicNumber = magicNumber;
-
+            martin.curzone = curzone;
             matrin.takeProfit();
             martin.doRecovery();
             
             delete(martin);
         } else if (trademode == zonecap)
         {
-
+            Zonecap *zc = new Zonecap();
+            zc.period = period;
+            zc.symbol = symbol;
+            zc.magicNumber = magicNumber;
+            zc.curzone = curzone;
+            zc.takeProfit();
+            zc.doRecovery();
+            
+            delete(zc);
         } else if (trademode == simplestoploss)
         {
 

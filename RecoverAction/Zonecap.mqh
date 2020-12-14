@@ -2,49 +2,81 @@
 #property link "https://www.traland.com"
 #property strict
 
-#include "BaseSignal.mqh"
+#include "BaseRecovery.mqh"
 
-class BasicEntry : public BaseSignal {
+class Zonecap : public BaseRecovery {
     private:
            
     public:
 
-    BasicEntry() {
+    Zonecap() {
 
         initHelper();
     }
 
     void initHelper() {
-        signalname = "BasicEntry";
-        signalid = basicentryid;
+        recoveryname = "Zonecap";
+        recoveryid = zonecap;
     }
 
-    ~BasicEntry() {
+    ~Zonecap() {
         
     }
 
-    void Refresh()
-    {
-        //Print("Checking basic entry");
-        double ema80 = iMA(symbol, period, 80, 0, MODE_EMA, PRICE_CLOSE, 0);
-        double ilow = iLow(symbol, period, 0);
-        double ihigh = iHigh(symbol, period, 0);
+    int doRecovery() {
+        if (!of_selectlastorder(symbol, magicNumber))
+            return -1;
 
-        signal = -1;
-        if (ilow > ema80)
-            signal = OP_BUY;
-        if (ihigh < ema80)
-            signal = OP_SELL;
-        signalvaliduntil = TimeCurrent() + 10 * 60;
+        if (OrderProfit() > 0)
+            return -1;
+
+        double lastprice = OrderOpenPrice();
+
+        string param[];
+        tf_commentdecode(OrderComment(), param);
+
+        double cprice = 0;
+        if (OrderType() == OP_BUY) {
+            cprice = MarketInfo(symbol, MODE_ASK);
+        }
+        else
+        {
+            cprice = MarketInfo(symbol, MODE_BID);
+        }
+
+        double diff = MathAbs(cprice - lastprice) * of_getcurrencrymultipier();
+
+        if (diff > curzone)
+        {
+            int neworderi = StrToInteger(param[2]) + 1;
+            double newlots = OrderLots() * 2;
+            if (newlots > 0.1)
+                newlots = OrderLots() * 1.5;
+
+            int newordertype = -1;
+            if (OrderType() == OP_BUY)
+                newordertype = OP_SELL;
+            else if (OrderType() == OP_SELL)
+                newordertype = OP_BUY;
+
+            tf_createorder(symbol, newordertype, newlots, IntegerToString(neworderi), "", 0, 0, recoveryname, magicNumber);
+            return 1;
+        }
+
+        return -1;
     }
 
-    void RefreshCloseSignal(int actiontype)
+    int takeProfit()
     {
-        closesignal = -1;
-        Refresh();
-        if (signal != actiontype)
-            closesignal = 1;
-        closesignalvaliduntil = TimeCurrent() + 10 * 60;
+        double tprofit = tf_orderTotalProfit(symbol, magicNumber);
+        int torder = tf_countAllOrders(symbol, magicNumber);
+        if (tprofit > targetProfitForEachOrder * torder) {
+            tf_closeAllOrders(symbol, magicNumber);
+            return 1;
+        }
+
+        return -1;
     }
+
 
 };

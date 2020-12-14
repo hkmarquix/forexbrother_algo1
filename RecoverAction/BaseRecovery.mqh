@@ -13,7 +13,7 @@ class BaseRecovery {
         int period;
         string symbol;
         int magicNumber;
-
+        int curzone;
         int recoversignal;
 
     BaseRecovery() {
@@ -24,6 +24,10 @@ class BaseRecovery {
     void initHelper() {
         recoverymethod = "BaseRecovery";
         recoveryid = -1;
+        curzone = 0;
+        symbol = "";
+        magicNumber = -1;
+        recoversignal = -1;
     }
 
     ~BaseRecovery() {

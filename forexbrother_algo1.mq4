@@ -52,6 +52,7 @@ int OnInit()
          tHelper.magicNumber = default_magicNumber;
          tHelper.symbol = cur;
          tHelper.period = curperiod[i];
+         tHelper.curzone = curzone[i];
          tHelper.trademode = curtrademode[i];
          tHelper.initHelper();
          curPairs[i] = tHelper;

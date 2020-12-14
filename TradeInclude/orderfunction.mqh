@@ -11,6 +11,8 @@ bool of_selectlastorder(string symbol, int magicNumber) {
         OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
         if (OrderMagicNumber() != magicNumber || OrderSymbol() != symbol)
             continue;
+        if (!(OrderType() == OP_BUY || OrderType() == OP_SELL))
+            continue;
 
         string param[];
         tf_commentdecode(OrderComment(), param);
@@ -52,6 +54,8 @@ bool of_selectrecoverypair(string symbol, int magicNumber, int pair_i, int pair_
     for (int i = OrdersTotal() - 1; i >= 0; i--) {
         OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
         if (OrderMagicNumber() != magicNumber || OrderSymbol() != symbol)
+            continue;
+        if (!(OrderType() == OP_BUY || OrderType() == OP_SELL))
             continue;
 
         string param[];
