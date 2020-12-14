@@ -48,7 +48,11 @@ class TradeHelper {
     }
 
     ~TradeHelper() {
-        
+        for (int i = 0; i < signalcount; i++)
+        {
+            BaseSignal *bsignal = (BaseSignal *)signalist[i];
+            delete(bsignal);
+        }
     }
 
     void refreshRobot() {
@@ -90,12 +94,19 @@ class TradeHelper {
                 be.Refresh();
             }
             
-            if (bsignal.signal != -1)
+            if (bsignal.signal != -1 && createOrderFilter(bsignal))
             {
                 tf_createorder(symbol, bsignal.signal, initlots, "1", "", bsignal.stoploss, bsignal.takeprofit, bsignal.signalname, magicNumber);
                 return;
             }
         }
+    }
+
+    bool createOrderFilter(BaseSignal *bsignal)
+    {
+
+
+        return true;
     }
 
     void checkHasOrderNextAction() {
