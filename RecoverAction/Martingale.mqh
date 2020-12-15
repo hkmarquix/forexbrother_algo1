@@ -38,10 +38,10 @@ class Martingale : public BaseRecovery {
         
         if (orderi == 1 && TimeCurrent() - lastopentime < 5 * 60 * 60)
             return -1;
-        if (orderi > 1 && TimeCurrent() - lastopentime < 30 * 60 * 60)
+        if (orderi > 1 && TimeCurrent() - lastopentime < 20 * 60 * 60)
             return -1;
         
-        Print("Last open time: " + lastopentime + " C: " + OrderComment());
+        //Print("Last open time: " + lastopentime + " C: " + OrderComment());
         double lastprice = OrderOpenPrice();
 
         

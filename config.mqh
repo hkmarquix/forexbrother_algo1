@@ -5,7 +5,7 @@ double initlots = 0.01;
 double initlotstep = 0.01;
 double recoverPips = 100;
 double zcrecoverPips = 450;
-double targetProfitForEachOrder = 1;
+double targetProfitForEachOrder = 0.5;
 
 int maxrecoverypair = 5;
 int maxopenedpair = 6;

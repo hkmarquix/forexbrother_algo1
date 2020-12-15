@@ -31,6 +31,8 @@ class MarquisBasicStochasticEntry : public BaseSignal {
         signal = -1;
         period = PERIOD_M1;
         
+        double sk0_5 = iStochastic(symbol, PERIOD_M5, 5, 3, 3, MODE_SMA, 0, MODE_MAIN, 0);
+
         double sk0 = iStochastic(symbol, period, 5, 3, 3, MODE_SMA, 0, MODE_MAIN, 0);
         double sd0 = iStochastic(symbol, period, 5, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 0);
         double sk1 = iStochastic(symbol, period, 5, 3, 3, MODE_SMA, 0, MODE_MAIN, 1);
@@ -54,13 +56,15 @@ class MarquisBasicStochasticEntry : public BaseSignal {
             return;
 
         if (sk0 > sk1 && macdm > macds && macdm > macdm1
+            && sk0_5 < 80
             && ima0 > ima1
             )
         {
             signal = OP_BUY;
         }
         if (sk0 < sk1 && macdm < macds && macdm < macdm1
-        && ima0 < ima1
+            && sk0_5 > 20
+            && ima0 < ima1
             )
         {
             signal = OP_SELL;
