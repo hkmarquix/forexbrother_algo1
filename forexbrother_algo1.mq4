@@ -11,10 +11,21 @@
 #include "config.mqh"
 #include "TradeInclude\tradefunction.mqh"
 #include "TradeInclude\orderfunction.mqh"
-#include "TradeInclude\TradeHelper.mqh"
+#include "SelfAdd\MTradeHelper.mqh"
 
-
-
+enum signalidlist {
+    basicentryid=1012,
+    marquisbasicentry = 3001,
+};
+enum trademodelist {
+    martingale = 1,
+    zonecap = 2,
+    simplestoploss = 3,
+    signalclosesignal = 4
+};
+enum filterlist {
+  TIMEFILTER = 1,
+};
 
 int default_magicNumber = 18291;
 double closeprice = 0.0;
@@ -22,8 +33,8 @@ bool keepsilence = false;
 
 int processOrders = 0;
 
-TradeHelper *tHelper;
-TradeHelper *curPairs[];
+MTradeHelper *tHelper;
+MTradeHelper *curPairs[];
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -48,12 +59,13 @@ int OnInit()
       for (int i = 0; i < ArraySize(curlist); i++)
       {
          string cur = curlist[i];
-         tHelper = new TradeHelper();
+         tHelper = new MTradeHelper();
          tHelper.magicNumber = default_magicNumber;
          tHelper.symbol = cur;
          tHelper.period = curperiod[i];
          tHelper.curzone = curzone[i];
          tHelper.trademode = curtrademode[i];
+         tHelper.presettrademode = tHelper.trademode;
          tHelper.initHelper();
          curPairs[i] = tHelper;
 
@@ -72,7 +84,7 @@ void OnDeinit(const int reason)
 //---
     for (int i = 0; i < ArraySize(curPairs); i++)
     {
-      TradeHelper *th = (TradeHelper *)curPairs[i];
+      MTradeHelper *th = (MTradeHelper *)curPairs[i];
       delete(th);
     }
    ArrayFree(curPairs);
@@ -91,7 +103,7 @@ void OnTick()
     processOrders = 1;
     for (int i = 0; i < ArraySize(curPairs); i++)
       {
-         TradeHelper *tHelper = curPairs[i];
+         MTradeHelper *tHelper = curPairs[i];
          tHelper.refreshRobot();
       }
     

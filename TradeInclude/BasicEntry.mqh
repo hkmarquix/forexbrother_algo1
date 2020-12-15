@@ -38,7 +38,7 @@ class BasicEntry : public BaseSignal {
         signalvaliduntil = TimeCurrent() + 10 * 60;
     }
 
-    void RefreshCloseSignal(int actiontype)
+    void RefreshCloseSignal(int actiontype, double entryprice)
     {
         closesignal = -1;
         Refresh();

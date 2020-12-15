@@ -6,6 +6,7 @@ bool of_selectlastorder(string symbol, int magicNumber) {
 
     int maxorderi = -1; 
     int lastpos = -1;
+    string cstr = "";
 
     for (int i = OrdersTotal() - 1; i >= 0; i--) {
         OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
@@ -17,6 +18,8 @@ bool of_selectlastorder(string symbol, int magicNumber) {
         string param[];
         tf_commentdecode(OrderComment(), param);
 
+        cstr += param[2] + ",";
+
         int orderi = StrToInteger(param[2]);
         if (orderi > maxorderi) {
             maxorderi = orderi;
@@ -26,6 +29,7 @@ bool of_selectlastorder(string symbol, int magicNumber) {
 
     if (lastpos > -1)
     {
+        //Print(cstr + " ::: " + maxorderi + ":: " + lastpos);
         OrderSelect(lastpos, SELECT_BY_POS, MODE_TRADES);
         return true;
     }
@@ -63,7 +67,7 @@ bool of_selectrecoverypair(string symbol, int magicNumber, int pair_i, int pair_
 
         int orderi = StrToInteger(param[2]);
         if (orderi == norderi) {
-            retrun true;    
+            return true;    
         }
     }
 

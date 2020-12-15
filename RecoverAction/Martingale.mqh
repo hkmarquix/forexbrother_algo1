@@ -15,7 +15,7 @@ class Martingale : public BaseRecovery {
     }
 
     void initHelper() {
-        recoveryname = "Martingale";
+        recoveryname = "Martin";
         recoveryid = martingale;
     }
 
@@ -31,9 +31,10 @@ class Martingale : public BaseRecovery {
             return -1;
 
         datetime lastopentime = OrderOpenTime();
-        if (lastopentime - TimeCurrent() > 30 * 60 * 60)
+        
+        if (TimeCurrent() - lastopentime < 30 * 60 * 60)
             return -1;
-
+        Print("Last open time: " + lastopentime + " C: " + OrderComment());
         double lastprice = OrderOpenPrice();
 
         string param[];
@@ -48,9 +49,9 @@ class Martingale : public BaseRecovery {
             cprice = MarketInfo(symbol, MODE_BID);
         }
 
-        double diff = MathAbs(cprice - lastprice) * of_getcurrencrymultipier();
+        double diff = MathAbs(cprice - lastprice) * of_getcurrencrymultipier(symbol);
 
-        if (diff > curzone)
+        if (diff > curzone && needRecoveryAction(cprice))
         {
             int neworderi = StrToInteger(param[2]) + 1;
             double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
@@ -59,11 +60,11 @@ class Martingale : public BaseRecovery {
             return 1;
         }
 
-        // stopping criteria , can be deleted
-        if (diff > curzone * 3) {
-            tf_closeAllOrders(symbol, magicNumber);
-            return 2;
-        }
+        //stopping criteria , can be deleted
+        //if (diff > curzone * 3) {
+        //    tf_closeAllOrders(symbol, magicNumber);
+        //    return 2;
+        //}
         
         return -1;
     }
@@ -81,5 +82,39 @@ class Martingale : public BaseRecovery {
         return -1;
     }
 
+    bool needRecoveryAction(double cprice)
+    {
+        period = PERIOD_M15;
+        int actiontype = OrderType();
+
+    double maend = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 0);
+     double maend1 = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 1);
+     double mastart = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 1);//windowToCheck - 1);
+
+     double iatr = iATR(symbol, period, 14, 0);
+
+     double maslope = (maend - mastart) / 2;
+
+     if (actiontype == OP_BUY && maslope < -2) //checkHighestI == windowToCheck - 1)
+     {
+       return false;
+     }
+     if (actiontype == OP_SELL && maslope > 2) // checkLowestI == windowToCheck -1)
+     {
+       return false;
+     }
+
+
+        if (cprice > maend + iatr * 0.15 && (maend - mastart) < 1)
+        {
+            return true;
+        }
+        //else if (cprice < maend - iatr * 0.25 && (maend - mastart) > -1)
+        else if (cprice < maend - iatr * 0.15 && (maend - mastart) > -1)
+        {
+            return true;
+        }
+        return false;
+    }
 
 };

@@ -21,6 +21,7 @@ void tf_createorder(string symbol, int ordertype, double lots, string orderi, st
 
     string comment = tf_commentencode(EA_NAME, entrymethod, orderi, tradeparam);
 
+    //Print("new comment: " + comment);
     if (ordertype == OP_BUY) {
         price = MarketInfo(symbol, MODE_ASK);
         Print("Create buy order x" + DoubleToString(lots, 2));
@@ -124,8 +125,9 @@ bool tf_findFirstOrder(string symbol, int magicnumber) {
             continue;
 
         int curComment = StringToInteger(OrderComment());
-        if (curComment == 1)
+        if (curComment == 1) {
             return true;
+        }
     }
     return false;
 }

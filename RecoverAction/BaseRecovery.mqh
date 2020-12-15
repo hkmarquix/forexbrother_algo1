@@ -7,7 +7,7 @@ class BaseRecovery {
     private:
            
     public:
-        string recoverymethod;
+        string recoveryname;
         int recoveryid;
 
         int period;
@@ -22,7 +22,7 @@ class BaseRecovery {
     }
 
     void initHelper() {
-        recoverymethod = "BaseRecovery";
+        recoveryname = "BaseRecovery";
         recoveryid = -1;
         curzone = 0;
         symbol = "";

@@ -3,53 +3,46 @@
 #property strict
 
 
-class BaseSignal {
+class BaseFilter {
     private:
           
     public:
-        int signalid;
+        int filterid;
         int signal;
         int closesignal;
 
+        int actiontype;
+        int lotsize;
 
         double takeprofit;
         double stoploss;
         
         string symbol;
         int period;
-        datetime signalvaliduntil;
-        datetime closesignalvaliduntil;
+        string filtername;
 
-        string signalname;
-
-    BaseSignal() {
-        signalname = "";
-        signalid = -1;
+    BaseFilter() {
+        filtername = "";
+        filterid = -1;
         signal = -1;
-        closesignal = -1;
-
+        
         symbol = "EURUSD";
         period = PERIOD_M15;
 
         takeprofit = 0;
         stoploss = 0;
 
-        signalvaliduntil = TimeCurrent();
-        closesignalvaliduntil = TimeCurrent();
     }
 
-    ~BaseSignal() {
+    ~BaseFilter() {
         
     }
 
     void Refresh()
     {
+        
+
         //Print("Base signal refresh");
-    }
-
-    void RefreshCloseSignal(int actiontype, double entryprice)
-    {
-
     }
 
 };

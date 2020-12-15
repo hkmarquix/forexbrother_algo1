@@ -5,16 +5,15 @@
 #include "BasicEntry.mqh"
 #include "BaseSignal.mqh"
 #include "tradefunction.mqh"
-#include "Martingale.mqh"
+#include "../RecoverAction/Martingale.mqh"
+#include "../RecoverAction/ZoneCap.mqh"
+#include "../Filter/TimeFilter.mqh"
 
 class TradeHelper {
     private:
-            
-        BaseSignal *signalist[];
-        
-        // 1 -> basic method
         
     public:
+        BaseSignal *signalist[];
         int totalsignal;
         int magicNumber;
         string symbol;
@@ -22,6 +21,7 @@ class TradeHelper {
         int period;
         int curzone;
         datetime stopcreateOrderuntil;
+        int presettrademode;
 
     TradeHelper() {
 
@@ -31,12 +31,18 @@ class TradeHelper {
         stopcreateOrderuntil = TimeCurrent();
     }
 
-    void initHelper() {
+// self modify
+    virtual void initHelper() {
         totalsignal = 0;
         if (usebasicentry == 1)
             totalsignal++;
         
         int currentsignali = 0;
+        initSignal(currentsignali);
+    }
+
+// self modify
+    virtual void initSignal(int currentsignali) {
         ArrayResize(signalist, totalsignal , 0);
         if (usebasicentry == 1)
         {
@@ -48,6 +54,7 @@ class TradeHelper {
     }
 
     ~TradeHelper() {
+        int signalcount = ArraySize(signalist);
         for (int i = 0; i < signalcount; i++)
         {
             BaseSignal *bsignal = (BaseSignal *)signalist[i];
@@ -72,7 +79,6 @@ class TradeHelper {
     bool checkHasOrder() {
         if (tf_countAllOrders(symbol, magicNumber) > 0)
             return true;
-        trademode = defaulttrademode;
         return false;
     }
 
@@ -82,49 +88,65 @@ class TradeHelper {
         return true;
     }
 
+// Self include this and modify
+    virtual void signalRefresh(BaseSignal *bsignal)
+    {
+        if (bsignal.signalid == basicentryid)
+        {
+            BasicEntry *be = (BasicEntry *)bsignal;
+            be.Refresh();
+        }
+    }
+
     void createFirstOrder() {
         int signalcount = ArraySize(signalist);
         for (int i = 0; i < signalcount; i++)
         {
             BaseSignal *bsignal = (BaseSignal *)signalist[i];
-            //Print("Checking signal..." + bsignal.signalname);
-            if (bsignal.signalid == basicentryid)
-            {
-                BasicEntry *be = (BasicEntry *)bsignal;
-                be.Refresh();
-            }
+            signalRefresh(bsignal);
             
-            if (bsignal.signal != -1 && createOrderFilter(bsignal))
+            if (createOrderFilter(bsignal.signal, initlots) && bsignal.signal != -1)
             {
+                Print("Create order now");
                 tf_createorder(symbol, bsignal.signal, initlots, "1", "", bsignal.stoploss, bsignal.takeprofit, bsignal.signalname, magicNumber);
                 return;
             }
         }
     }
 
-    bool createOrderFilter(BaseSignal *bsignal)
+// Self include this and modify
+    virtual bool createOrderFilter(int signal, double lotsize)
     {
-
 
         return true;
     }
 
     void checkHasOrderNextAction() {
-        if (tf_countAllOrders(symbol, magicNumber) == 1)
+        int torders = tf_countAllOrders(symbol, magicNumber);
+        if (torders > 0)
         {
             checkSignalCloseAction();
-        }
-        else 
-        {
-            // using recover method
             checkRecoverAction();
         }
+    }
+
+    virtual void closeSignalRefresh(BaseSignal *bsignal)
+    {
+        if (bsignal.signalid == basicentryid)
+        {
+            BasicEntry *be = (BasicEntry *)bsignal;
+            be.RefreshCloseSignal(OrderType(), OrderOpenPrice());
+        }
+        
     }
 
     void checkSignalCloseAction()
     {
         string orderparam[];
+        //tf_findFirstOrder(symbol, magicNumber);
+        //Print("Order comment: " + OrderComment());
         tf_commentdecode(OrderComment(), orderparam);
+        
         int signalcount = ArraySize(signalist);
         int resultsignal = -1;
         for (int i = 0; i < signalcount; i++)
@@ -132,11 +154,7 @@ class TradeHelper {
             BaseSignal *bsignal = (BaseSignal *)signalist[i];
             if (orderparam[1] == bsignal.signalname)
             {
-                if (bsignal.signalid == basicentryid)
-                {
-                    BasicEntry *be = (BasicEntry *)bsignal;
-                    be.RefreshCloseSignal(OrderType());
-                }
+                closeSignalRefresh(bsignal);
                 resultsignal = bsignal.closesignal;
                 break;
             }
@@ -147,7 +165,8 @@ class TradeHelper {
         }
     }
 
-    void checkRecoverAction()
+// Self include this and modify
+    virtual void checkRecoverAction()
     {
         if (trademode == martingale)
         {
@@ -156,7 +175,7 @@ class TradeHelper {
             martin.symbol = symbol;
             martin.magicNumber = magicNumber;
             martin.curzone = curzone;
-            matrin.takeProfit();
+            martin.takeProfit();
             martin.doRecovery();
             
             delete(martin);

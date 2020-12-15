@@ -44,7 +44,7 @@ class Zonecap : public BaseRecovery {
             cprice = MarketInfo(symbol, MODE_BID);
         }
 
-        double diff = MathAbs(cprice - lastprice) * of_getcurrencrymultipier();
+        double diff = MathAbs(cprice - lastprice) * of_getcurrencrymultipier(symbol);
 
         if (diff > curzone)
         {
