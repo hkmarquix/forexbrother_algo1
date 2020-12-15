@@ -1,5 +1,5 @@
 
-double lotincrease_step = 0;//0.01;
+double lotincrease_step = 0.01;//0.01;
 
 double initlots = 0.01;
 double initlotstep = 0.01;

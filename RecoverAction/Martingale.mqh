@@ -30,15 +30,21 @@ class Martingale : public BaseRecovery {
         if (OrderProfit() > 0)
             return -1;
 
+        string param[];
+        tf_commentdecode(OrderComment(), param);
+        int orderi = StrToInteger(param[2]);
+
         datetime lastopentime = OrderOpenTime();
         
-        if (TimeCurrent() - lastopentime < 30 * 60 * 60)
+        if (orderi == 1 && TimeCurrent() - lastopentime < 5 * 60 * 60)
             return -1;
+        if (orderi > 1 && TimeCurrent() - lastopentime < 30 * 60 * 60)
+            return -1;
+        
         Print("Last open time: " + lastopentime + " C: " + OrderComment());
         double lastprice = OrderOpenPrice();
 
-        string param[];
-        tf_commentdecode(OrderComment(), param);
+        
 
         double cprice = 0;
         if (OrderType() == OP_BUY) {

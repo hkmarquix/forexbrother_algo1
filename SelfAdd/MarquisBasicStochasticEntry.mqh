@@ -42,17 +42,25 @@ class MarquisBasicStochasticEntry : public BaseSignal {
         double macdm1 = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 1);
         double macds1= iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 1);
 
+         
+        double ima0 = iMA(symbol, period, 200, 0, MODE_SMA, PRICE_CLOSE, 0);
+        double ima1 = iMA(symbol, period, 200, 0, MODE_SMA, PRICE_CLOSE, 1);
+
+
+
         double iatr = iATR(symbol, period, 14, 0);
         double iadx = iADX(symbol, period, 14, PRICE_CLOSE, MODE_MAIN, 0);
         if (iatr < 1 || iadx < 20.1)
             return;
 
         if (sk0 > sk1 && macdm > macds && macdm > macdm1
+            && ima0 > ima1
             )
         {
             signal = OP_BUY;
         }
         if (sk0 < sk1 && macdm < macds && macdm < macdm1
+        && ima0 < ima1
             )
         {
             signal = OP_SELL;
