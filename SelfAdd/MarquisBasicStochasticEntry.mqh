@@ -12,7 +12,7 @@ class MarquisBasicStochasticEntry : public BaseSignal {
         int takeprofit_pips;
 
     MarquisBasicStochasticEntry() {
-        takeprofit_pips = 100;
+        takeprofit_pips = 80;
 
         initHelper();
     }

@@ -78,8 +78,11 @@ class Martingale : public BaseRecovery {
 
     int takeProfit()
     {
-        double tprofit = tf_orderTotalProfit(symbol, magicNumber);
         int torder = tf_countAllOrders(symbol, magicNumber);
+        if (torder <= 1)
+            return -1;
+        double tprofit = tf_orderTotalProfit(symbol, magicNumber);
+        
         if (tprofit > targetProfitForEachOrder * torder) {
             tf_closeAllOrders(symbol, magicNumber);
             return 1;
