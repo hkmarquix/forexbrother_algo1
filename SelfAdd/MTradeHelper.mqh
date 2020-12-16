@@ -106,7 +106,6 @@ class MTradeHelper : public TradeHelper {
 // Self include this and modify
     void checkRecoverAction()
     {
-        Print("Check recovery : " + trademode);
         if (trademode == martingale)
         {
             Martingale *martin = new Martingale();
@@ -114,8 +113,13 @@ class MTradeHelper : public TradeHelper {
             martin.symbol = symbol;
             martin.magicNumber = magicNumber;
             martin.curzone = curzone;
+            martin.currecover = currecover;
             martin.takeProfit();
-            martin.doRecovery();
+            int res = martin.doRecovery();
+            if (res == 2)
+            {
+               trademode = zonecap;
+            }
             
             delete(martin);
         } else if (trademode == zonecap)
@@ -125,6 +129,7 @@ class MTradeHelper : public TradeHelper {
             zc.symbol = symbol;
             zc.magicNumber = magicNumber;
             zc.curzone = curzone;
+            zc.currecover = currecover;
             zc.takeProfit();
             zc.doRecovery();
             

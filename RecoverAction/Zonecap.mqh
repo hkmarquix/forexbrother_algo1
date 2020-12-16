@@ -48,16 +48,20 @@ class Zonecap : public BaseRecovery {
 
         if (diff > curzone)
         {
-            int neworderi = StrToInteger(param[2]) + 1;
-            double newlots = OrderLots() * 2;
-            if (newlots > 0.1)
-                newlots = OrderLots() * 1.5;
-
             int newordertype = -1;
             if (OrderType() == OP_BUY)
                 newordertype = OP_SELL;
             else if (OrderType() == OP_SELL)
                 newordertype = OP_BUY;
+                
+            double tlotsoftype = tf_countAllLotsWithActionType(OrderType(), symbol, magicNumber);
+            double tlotsofopptype = tf_countAllLotsWithActionType(newordertype, symbol, magicNumber);
+            int neworderi = StrToInteger(param[2]) + 1;
+            double newlots = MathAbs(tlotsoftype - tlotsofopptype + OrderLots()) * 1.5;
+            if (newlots > lotincrease_step * 10)
+                newlots = MathAbs(tlotsoftype - tlotsofopptype + OrderLots()) * 1.1;
+
+            
 
             tf_createorder(symbol, newordertype, newlots, IntegerToString(neworderi), "", 0, 0, recoveryname, magicNumber);
             return 1;

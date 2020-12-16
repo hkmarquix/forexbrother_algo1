@@ -20,6 +20,7 @@ class TradeHelper {
         int trademode;
         int period;
         int curzone;
+        int currecover;
         datetime stopcreateOrderuntil;
         int presettrademode;
 
@@ -109,6 +110,7 @@ class TradeHelper {
             {
                 Print("Create order now");
                 tf_createorder(symbol, bsignal.signal, initlots, "1", "", bsignal.stoploss, bsignal.takeprofit, bsignal.signalname, magicNumber);
+                trademode = presettrademode;
                 return;
             }
         }

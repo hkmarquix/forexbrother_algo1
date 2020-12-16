@@ -64,6 +64,7 @@ int OnInit()
          tHelper.symbol = cur;
          tHelper.period = curperiod[i];
          tHelper.curzone = curzone[i];
+         tHelper.currecover = currecover[i];
          tHelper.trademode = curtrademode[i];
          tHelper.presettrademode = tHelper.trademode;
          tHelper.initHelper();

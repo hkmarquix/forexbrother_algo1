@@ -153,6 +153,26 @@ int tf_countAllOrders(string symbol, int magicnumber) {
     return torder;
 }
 
+double tf_countAllLots(string symbol, int magicnumber) {
+    double tlots = 0;
+    for (int i = 0; i < OrdersTotal(); i++) {
+        OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
+        if (OrderMagicNumber() == magicnumber && OrderSymbol() == symbol)
+            tlots = tlots + OrderLots();
+    }
+    return tlots;
+}
+
+double tf_countAllLotsWithActionType(int actiontype, string symbol, int magicnumber) {
+    double tlots = 0;
+    for (int i = 0; i < OrdersTotal(); i++) {
+        OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
+        if (actiontype == OrderType() && OrderMagicNumber() == magicnumber && OrderSymbol() == symbol)
+            tlots = tlots + OrderLots();
+    }
+    return tlots;
+}
+
 double tf_orderTotalProfit(string symbol, int magicnumber)
 {
     double tprofit = 0;
