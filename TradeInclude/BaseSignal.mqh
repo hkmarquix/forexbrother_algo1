@@ -10,7 +10,7 @@ class BaseSignal {
         int signalid;
         int signal;
         int closesignal;
-
+        int recovermethod;
 
         double takeprofit;
         double stoploss;
@@ -27,6 +27,7 @@ class BaseSignal {
         signalid = -1;
         signal = -1;
         closesignal = -1;
+        recovermethod = -1;
 
         symbol = "EURUSD";
         period = PERIOD_M15;

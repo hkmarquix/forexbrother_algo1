@@ -3,6 +3,7 @@
 #property strict
 
 #include "MarquisBasicStochasticEntry.mqh"
+#include "MarquisBollingerEntry.mqh"
 #include "../TradeInclude/TradeHelper.mqh"
 #include "../TradeInclude/BasicEntry.mqh"
 #include "../TradeInclude/BaseSignal.mqh"
@@ -10,6 +11,7 @@
 #include "../RecoverAction/Martingale.mqh"
 #include "../RecoverAction/ZoneCap.mqh"
 #include "../Filter/TimeFilter.mqh"
+#include "../Filter/ADXFilter.mqh"
 
 class MTradeHelper : public TradeHelper {
     private:
@@ -27,12 +29,12 @@ class MTradeHelper : public TradeHelper {
             totalsignal++;
         if (use_marquisbasicstochasticmethod == 1)
             totalsignal++;
+        if (use_marquisbandentry == 1)
+            totalsignal++;
         ArrayResize(signalist, totalsignal , 0);
 
-        for (int i = 0; i < ArraySize(signalist); i++)
-        {
-            initSignal(i);
-        }
+        initSignal(0);
+        
     }
 
 
@@ -43,27 +45,40 @@ class MTradeHelper : public TradeHelper {
         {
             signalist[currentsignali] = new BasicEntry();
             signalist[currentsignali].period = period;
-            signalist[currentsignali].symbol = symbol;
+            signalist[currentsignali++].symbol = symbol;
         }
         if (use_marquisbasicstochasticmethod == 1)
         {
             signalist[currentsignali] = new MarquisBasicStochasticEntry();
             signalist[currentsignali].period = period;
-            signalist[currentsignali].symbol = symbol;
+            signalist[currentsignali++].symbol = symbol;
         }
+        if (use_marquisbandentry == 1)
+        {
+            signalist[currentsignali] = new MarquisBollingerEntry();
+            signalist[currentsignali].period = period;
+            signalist[currentsignali++].symbol = symbol;
+        }
+        
     }
 
 // Self include this and modify
     void signalRefresh(BaseSignal *bsignal)
     {
+        Print(bsignal.signalid);
         if (bsignal.signalid == basicentryid)
         {
             BasicEntry *be = (BasicEntry *)bsignal;
             be.Refresh();
         }
-        if (use_marquisbasicstochasticmethod == 1)
+        if (bsignal.signalid == marquisbasicentry)
         {
             MarquisBasicStochasticEntry *mbe = (MarquisBasicStochasticEntry *)bsignal;
+            mbe.Refresh();
+        }
+        if (bsignal.signalid == marquisbandentry)
+        {
+            MarquisBollingerEntry *mbe = (MarquisBollingerEntry *)bsignal;
             mbe.Refresh();
         }
     }
@@ -84,6 +99,19 @@ class MTradeHelper : public TradeHelper {
             return false;
         }
 
+        ADXFilter *adxf = new ADXFilter();
+        adxf.symbol = symbol;
+        adxf.period = period;
+        adxf.actiontype = signal;
+        adxf.lotsize = lotsize;
+        adxf.Refresh();
+        tsignal = adxf.signal;
+        delete(adxf);
+        if (tsignal != signal) {
+            return false;
+        }
+
+
         return true;
     }
 
@@ -99,7 +127,11 @@ class MTradeHelper : public TradeHelper {
             MarquisBasicStochasticEntry *mse = (MarquisBasicStochasticEntry *)bsignal;
             mse.RefreshCloseSignal(OrderType(), OrderOpenPrice());
         }
-        
+        else if (bsignal.signalid == marquisbandentry)
+        {
+            MarquisBollingerEntry *mse = (MarquisBollingerEntry *)bsignal;
+            mse.RefreshCloseSignal(OrderType(), OrderOpenPrice());
+        }
     }
 
 

@@ -16,15 +16,19 @@
 enum signalidlist {
     basicentryid=1012,
     marquisbasicentry = 3001,
+    marquisbandentry = 3002
 };
 enum trademodelist {
     martingale = 1,
     zonecap = 2,
     simplestoploss = 3,
-    signalclosesignal = 4
+    signalclosesignal = 4,
+
+    selfsignal = 99
 };
 enum filterlist {
   TIMEFILTER = 1,
+  ADXFILTER = 2
 };
 
 int default_magicNumber = 18291;

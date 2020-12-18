@@ -151,6 +151,7 @@ class TradeHelper {
         
         int signalcount = ArraySize(signalist);
         int resultsignal = -1;
+        int recovermethod = -1;
         for (int i = 0; i < signalcount; i++)
         {
             BaseSignal *bsignal = (BaseSignal *)signalist[i];
@@ -158,12 +159,26 @@ class TradeHelper {
             {
                 closeSignalRefresh(bsignal);
                 resultsignal = bsignal.closesignal;
+                recovermethod = bsignal.recovermethod;
                 break;
             }
         }
         if (resultsignal == 1)
         {
             tf_closeAllOrders(symbol, magicNumber);
+        }
+        if (resultsignal == 2 && trademode == selfsignal)
+        {
+            if (recovermethod == martingale)
+            {
+                Martingale *martin = new Martingale();
+                martin.period = period;
+                martin.symbol = symbol;
+                martin.magicNumber = magicNumber;
+                martin.curzone = curzone;
+                martin.simplyDoRecovery();
+                delete(martin);
+            }
         }
     }
 
@@ -196,6 +211,10 @@ class TradeHelper {
         {
 
         } else if (trademode == signalclosesignal) {
+
+        }
+        else if (trademode == selfsignal)
+        {
 
         }
     }

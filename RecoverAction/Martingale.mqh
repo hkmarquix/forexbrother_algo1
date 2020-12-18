@@ -30,6 +30,31 @@ int SenKouSpanB;
         
     }
 
+    int simplyDoRecovery()
+    {
+        if (!of_selectlastorder(symbol, magicNumber))
+            return -1;
+
+        if (OrderProfit() > 0)
+            return -1;
+
+        string param[];
+        tf_commentdecode(OrderComment(), param);
+        int orderi = StrToInteger(param[2]);
+
+        datetime lastopentime = OrderOpenTime();
+        
+        if (TimeCurrent() - lastopentime < PeriodSeconds(period) * 3)
+            return -1;
+
+        int neworderi = StrToInteger(param[2]) + 1;
+        double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
+
+        tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, param[1], magicNumber);
+        return 1;
+
+    }
+
     int doRecovery() {
         if (!of_selectlastorder(symbol, magicNumber))
             return -1;
