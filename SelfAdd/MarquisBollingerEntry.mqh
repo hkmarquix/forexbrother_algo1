@@ -14,7 +14,7 @@ class MarquisBollingerEntry : public BaseSignal {
 
         double uval1;
         double mval1;
-        double lval1;
+        double lval1; 
 
         double cprice;
 
@@ -47,6 +47,11 @@ class MarquisBollingerEntry : public BaseSignal {
 
     void Refresh()
     {
+        if (TimeCurrent() < signalvaliduntil)
+            return;
+        //if (TimeMinute(TimeCurrent()) % 15 > 0)
+        //    return;
+
         signal = -1;
 
         cprice = iClose(symbol, period, 0);
@@ -62,18 +67,18 @@ class MarquisBollingerEntry : public BaseSignal {
         double ima0 = iMA(symbol, period, 200, 0, MODE_SMA, PRICE_CLOSE, 0);
         double ima1 = iMA(symbol, period, 200, 0, MODE_SMA, PRICE_CLOSE, 1);
 
-
-
+        
 
 
         if (isMouthOpen())
         {
-            signal = strongsignal;
-            signalvaliduntil = TimeCurrent() + 10 * 60;
-            return;
+            if (strongsignal == OP_BUY && (ima0 - ima1) * of_getcurrencrymultipier(symbol) > -2)
+                signal = strongsignal;
+            if (strongsignal == OP_SELL && (ima0 - ima1) * of_getcurrencrymultipier(symbol) < 2)
+                signal = strongsignal;
+            
         }
-        if (uval > uval1 && lval < lval1)
-            return;
+
         /*
         ihigh1 = iHigh(symbol, period, 1);
         ihigh0 = iHigh(symbol, period, 0);
@@ -91,7 +96,7 @@ class MarquisBollingerEntry : public BaseSignal {
             signal = OP_BUY;
         }
         */
-        signalvaliduntil = TimeCurrent() + 10 * 60;
+        signalvaliduntil = TimeCurrent() + 5 * 60;
     }
 
     bool isMouthOpen()
@@ -100,9 +105,17 @@ class MarquisBollingerEntry : public BaseSignal {
         double diffu = (uval - uval1) * of_getcurrencrymultipier(symbol);
         double diffl = (lval1 - lval) * of_getcurrencrymultipier(symbol);
 
+        double vol = iVolume(symbol, period, 1);
+        double vol2 = iVolume(symbol, period, 2);
+
+        double mfi = iMFI(symbol, period, 14, 0);
+        double mfi1 = iMFI(symbol, period, 14, 1);
+        
+
         if (uval > uval1 && lval < lval1
-            && diffu > 60 && diffl > 60)
+            && diffu > 40 && diffl > 40 && vol > vol2 && mfi > mfi1)
         {
+            Print("UVal: " + uval + " uval1: " + uval1 + " lval: " + lval + " lval1: " + lval1 + " vol: " + vol);
             if (cprice > mval)
                 strongsignal = OP_BUY;
             if (cprice < mval)
@@ -114,7 +127,13 @@ class MarquisBollingerEntry : public BaseSignal {
 
     void RefreshCloseSignal(int actiontype, double entryprice)
     {
+        
         closesignal = -1;
+
+
+        if (TimeCurrent() < signalvaliduntil)
+            return;
+
 
         double diff = 0;
         if (actiontype == OP_BUY)
@@ -124,40 +143,18 @@ class MarquisBollingerEntry : public BaseSignal {
 
         Refresh();
 
-        double maend = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 0);
-        double maend1 = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 1);
-        double mastart = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 1);//windowToCheck - 1);
+        double ihigh0 = iHigh(symbol, period, 0);
+        double ilow0 = iLow(symbol, period, 0);
 
-        double iatr = iATR(symbol, period, 14, 0);
-
-        double maslope = (maend - mastart) / 2;
-
-        if (actiontype == OP_BUY && maslope < -2) //checkHighestI == windowToCheck - 1)
-        {
+        if (signal == actiontype)
             return;
-        }
-        if (actiontype == OP_SELL && maslope > 2) // checkLowestI == windowToCheck -1)
-        {
-            return;
-        }
-        maend = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 0);
-        maend1 = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 1);
-        mastart = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 1);//windowToCheck - 1);
-        //iatr = iATR(symbol, period, 14, 0);
 
-
-
-        if (cprice > maend + iatr * 0.15 && (maend - mastart) < 1)
+        if (actiontype == OP_BUY && ihigh0 < uval)
         {
             closesignal = 1;
-            return;
         }
-        else if (cprice < maend - iatr * 0.15 && (maend - mastart) > -1)
-        {
+        if (actiontype == OP_SELL && ilow0 > lval)
             closesignal = 1;
-            return;
-        }
-
 
     }
 

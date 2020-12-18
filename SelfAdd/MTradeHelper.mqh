@@ -65,7 +65,7 @@ class MTradeHelper : public TradeHelper {
 // Self include this and modify
     void signalRefresh(BaseSignal *bsignal)
     {
-        Print(bsignal.signalid);
+        //Print(bsignal.signalid);
         if (bsignal.signalid == basicentryid)
         {
             BasicEntry *be = (BasicEntry *)bsignal;
