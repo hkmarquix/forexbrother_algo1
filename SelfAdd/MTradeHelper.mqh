@@ -4,6 +4,7 @@
 
 #include "MarquisBasicStochasticEntry.mqh"
 #include "MarquisBollingerEntry.mqh"
+#include "MichimokuSignal.mqh"
 #include "../TradeInclude/TradeHelper.mqh"
 #include "../TradeInclude/BasicEntry.mqh"
 #include "../TradeInclude/BaseSignal.mqh"
@@ -30,6 +31,8 @@ class MTradeHelper : public TradeHelper {
         if (use_marquisbasicstochasticmethod == 1)
             totalsignal++;
         if (use_marquisbandentry == 1)
+            totalsignal++;
+        if (use_michimoku == 1)
             totalsignal++;
         ArrayResize(signalist, totalsignal , 0);
 
@@ -59,6 +62,12 @@ class MTradeHelper : public TradeHelper {
             signalist[currentsignali].period = period;
             signalist[currentsignali++].symbol = symbol;
         }
+        if (use_michimoku == 1)
+        {
+            signalist[currentsignali] = new MichimokuSignal();
+            signalist[currentsignali].period = period;
+            signalist[currentsignali++].symbol = symbol;
+        }
         
     }
 
@@ -80,6 +89,11 @@ class MTradeHelper : public TradeHelper {
         {
             MarquisBollingerEntry *mbe = (MarquisBollingerEntry *)bsignal;
             mbe.Refresh();
+        }
+        if (bsignal.signalid == michimoku)
+        {
+            MichimokuSignal *ms = (MichimokuSignal *)bsignal;
+            ms.Refresh();
         }
     }
 
@@ -131,6 +145,11 @@ class MTradeHelper : public TradeHelper {
         {
             MarquisBollingerEntry *mse = (MarquisBollingerEntry *)bsignal;
             mse.RefreshCloseSignal(OrderType(), OrderOpenPrice());
+        }
+        else if (bsignal.signalid == michimoku)
+        {
+            MichimokuSignal *ms = (MichimokuSignal *)bsignal;
+            ms.RefreshCloseSignal(OrderType(), OrderOpenPrice());
         }
     }
 

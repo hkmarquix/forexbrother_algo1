@@ -12,7 +12,8 @@ int maxopenedpair = 6;
 
 string EA_NAME = "fba1";
 
-int use_marquisbandentry = 1;
+int use_michimoku = 1;
+int use_marquisbandentry = 0;
 int use_marquisbasicstochasticmethod = 0;
 int usebasicentry = 0;
 

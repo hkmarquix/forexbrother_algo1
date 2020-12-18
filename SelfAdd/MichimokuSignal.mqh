@@ -7,6 +7,10 @@
 
 class MichimokuSignal : public BaseSignal {
     private:
+        int TenKanSen;
+        int KijunSen;
+        int SenKouSpanB;
+
 
         double tenkan_sen;
         double kinjun_sen;
@@ -45,6 +49,10 @@ class MichimokuSignal : public BaseSignal {
         int strongsignal;
 
     MichimokuSignal() {
+        TenKanSen = 9;
+        KijunSen = 26;
+        SenKouSpanB = 52;
+
         takeprofit_pips = 80;
         initHelper();
     }
@@ -267,13 +275,13 @@ class MichimokuSignal : public BaseSignal {
                 && chikouspan1 > t_high1)
             {
                 chikouspanTouchTheCloud = true;
-                break;
+                
             }
             if (t_high0 < MathMin(tsenkou_spanA, tsenkou_spanB) && chikouspan0 > t_low0
                 && chikouspan1 < t_low1)
             {
                 chikouspanTouchTheCloud = true;
-                break;
+                
             }
         }
     }
