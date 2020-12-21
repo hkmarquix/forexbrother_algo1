@@ -5,6 +5,7 @@
 #include "MarquisBasicStochasticEntry.mqh"
 #include "MarquisBollingerEntry.mqh"
 #include "MichimokuSignal.mqh"
+#include "CGoldSignal.mqh"
 #include "../TradeInclude/TradeHelper.mqh"
 #include "../TradeInclude/BasicEntry.mqh"
 #include "../TradeInclude/BaseSignal.mqh"
@@ -33,6 +34,8 @@ class MTradeHelper : public TradeHelper {
         if (use_marquisbandentry == 1)
             totalsignal++;
         if (use_michimoku == 1)
+            totalsignal++;
+        if (use_cgold == 1)
             totalsignal++;
         ArrayResize(signalist, totalsignal , 0);
 
@@ -68,6 +71,14 @@ class MTradeHelper : public TradeHelper {
             signalist[currentsignali].period = period;
             signalist[currentsignali++].symbol = symbol;
         }
+        if (use_cgold = 1)
+        {
+            signalist[currentsignali] = new CGoldSignal();
+            signalist[currentsignali].period = period;
+            signalist[currentsignali].magicNumber = magicNumber;
+            signalist[currentsignali].curzone = curzone;
+            signalist[currentsignali++].symbol = symbol;
+        }
         
     }
 
@@ -94,6 +105,11 @@ class MTradeHelper : public TradeHelper {
         {
             MichimokuSignal *ms = (MichimokuSignal *)bsignal;
             ms.Refresh();
+        }
+        if (bsignal.signalid == cgold)
+        {
+            CGoldSignal *cg = (CGoldSignal *)bsignal;
+            cg.Refresh();
         }
     }
 
@@ -131,6 +147,7 @@ class MTradeHelper : public TradeHelper {
 
     void closeSignalRefresh(BaseSignal *bsignal)
     {
+        of_selectlastorder(symbol, magicNumber);
         if (bsignal.signalid == basicentryid)
         {
             BasicEntry *be = (BasicEntry *)bsignal;
@@ -151,6 +168,11 @@ class MTradeHelper : public TradeHelper {
             MichimokuSignal *ms = (MichimokuSignal *)bsignal;
             ms.RefreshCloseSignal(OrderType(), OrderOpenPrice());
         }
+        else if (bsignal.signalid == cgold)
+        {
+            CGoldSignal *cg = (CGoldSignal *)bsignal;
+            cg.RefreshCloseSignal(OrderType(), OrderOpenPrice(), OrderOpenTime());
+        }
     }
 
 
@@ -160,7 +182,7 @@ class MTradeHelper : public TradeHelper {
         if (trademode == martingale)
         {
             Martingale *martin = new Martingale();
-            martin.period = period;
+            martin.period = PERIOD_M1;
             martin.symbol = symbol;
             martin.magicNumber = magicNumber;
             martin.curzone = curzone;

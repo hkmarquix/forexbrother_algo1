@@ -44,11 +44,11 @@ int SenKouSpanB;
 
         datetime lastopentime = OrderOpenTime();
         
-        if (TimeCurrent() - lastopentime < PeriodSeconds(period) * 3)
+        if (TimeCurrent() - lastopentime < 1 * 60)//PeriodSeconds(period) * 3)
             return -1;
 
         int neworderi = StrToInteger(param[2]) + 1;
-        double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
+        double newlots = OrderLots() + initlotstep + (neworderi - 2) * lotincrease_step;
 
         tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, param[1], magicNumber);
         return 1;
@@ -98,8 +98,8 @@ int SenKouSpanB;
             return 1;
         }
         
-        if (checkGiveupMartingaleAndChangeToZoneCap())
-         return 2;
+        //if (checkGiveupMartingaleAndChangeToZoneCap())
+        //  return 2;
 
         return -1;
     }

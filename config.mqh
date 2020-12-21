@@ -1,18 +1,19 @@
 
-double lotincrease_step = 0.02;//0.01;
+double lotincrease_step = 0.01;//0.01;
 
-double initlots = 0.08;//0.04;
-double initlotstep = 0.08;//0.04;
+double initlots = 0.04;//0.04;
+double initlotstep = 0.04;//0.04;
 double recoverPips = 100;
 double zcrecoverPips = 450;
-double targetProfitForEachOrder = 0.8;//0.4;
+double targetProfitForEachOrder = 3;//0.4;
 
 int maxrecoverypair = 5;
 int maxopenedpair = 6;
 
 string EA_NAME = "fba1";
 
-int use_michimoku = 1;
+int use_cgold = 1;
+int use_michimoku = 0;
 int use_marquisbandentry = 0;
 int use_marquisbasicstochasticmethod = 0;
 int usebasicentry = 0;
@@ -30,8 +31,8 @@ int currenttrademode = 2;
     */
 
 int maxCommentLevel = 20;
-string curlist[] =  { "EURUSD" };//, "EURJPY", "USDJPY", "USDCHF", "GBPAUD" };
-int curperiod[] = { PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15 };
-int curtrademode[] = { 1, 2, 2, 2, 2 };
+string curlist[] =  { "XAUUSD" };//, "EURJPY", "USDJPY", "USDCHF", "GBPAUD" };
+int curperiod[] = { PERIOD_M1, PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15 };
+int curtrademode[] = { 4, 2, 2, 2, 2 };
 double currecover[] = { 120, 120, 120, 120, 120 };
-double curzone[] = { 500, 500, 500, 500, 500 };
+double curzone[] = { 100, 500, 500, 500, 500 };

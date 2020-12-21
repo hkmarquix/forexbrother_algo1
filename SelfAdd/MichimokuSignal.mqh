@@ -47,6 +47,7 @@ class MichimokuSignal : public BaseSignal {
     public:
         int takeprofit_pips;
         int strongsignal;
+        int weaksignal;
 
     MichimokuSignal() {
         TenKanSen = 9;
@@ -69,12 +70,12 @@ class MichimokuSignal : public BaseSignal {
 
     void Refresh()
     {
-        if (TimeCurrent() < signalvaliduntil)
-            return;
+        //if (TimeCurrent() < signalvaliduntil)
+        //    return;
         //if (TimeMinute(TimeCurrent()) % 15 > 0)
         //    return;
-
         signal = -1;
+        weaksignal = -1;
         strongsignal = -1;
 
         close0 = iClose(symbol, period, 0);
@@ -106,6 +107,7 @@ class MichimokuSignal : public BaseSignal {
         checkInsideTheCloud();
         if (insideTheCloud)
         {
+            //Print("Inside the cloud");
             return;
         }
 
@@ -115,16 +117,17 @@ class MichimokuSignal : public BaseSignal {
         checkCloudFarAwayIndex();
         checkCrossCloudSignalStrongBeforeTenkanKinJunCross();
 
+        signal = strongsignal;
     }
 
     void checkInsideTheCloud()
     {
         insideTheCloud = false;
-        if (ihigh0 < MathMin(senkou_spanA, senkou_spanB)) {
+        if (ihigh0 < MathMax(senkou_spanA, senkou_spanB) && ihigh0 > MathMin(senkou_spanA, senkou_spanB)) {
             insideTheCloud = true;
             return;
         }
-        if (ilow0 > MathMax(senkou_spanA, senkou_spanB)) {
+        if (ilow0 < MathMax(senkou_spanA, senkou_spanB) && ilow0 > MathMin(senkou_spanA, senkou_spanB)) {
             insideTheCloud = true;
             return;
         }
@@ -133,24 +136,30 @@ class MichimokuSignal : public BaseSignal {
     void checkBuySellSignalOfTenKanKiJunCross()
     {
         if (ilow0 > MathMax(senkou_spanA, senkou_spanB)
-            && tenkan_sen > kinjun_sen && tenkan_sen1 < kinjun_sen1)
+            && tenkan_sen > kinjun_sen && tenkan_sen1 < kinjun_sen1
+             && tenkan_sen2 < kinjun_sen2)
         {
             strongsignal = OP_BUY;
+            weaksignal = OP_BUY;
         }
         else if (ihigh0 < MathMin(senkou_spanA, senkou_spanB)
-            && tenkan_sen > kinjun_sen && tenkan_sen1 < kinjun_sen1)
+            && tenkan_sen > kinjun_sen && tenkan_sen1 < kinjun_sen1
+             && tenkan_sen2 < kinjun_sen2)
         {
-            signal = OP_BUY;
+            weaksignal = OP_BUY;
         }
         else if (ihigh0 < MathMin(senkou_spanA, senkou_spanB)
-            && tenkan_sen < kinjun_sen && tenkan_sen1 > kinjun_sen1)
+            && tenkan_sen < kinjun_sen && tenkan_sen1 > kinjun_sen1
+             && tenkan_sen2 > kinjun_sen2)
         {
             strongsignal = OP_SELL;
+            weaksignal = OP_SELL;
         }
         else if (ilow0 > MathMax(senkou_spanA, senkou_spanB)
-            && tenkan_sen < kinjun_sen && tenkan_sen1 > kinjun_sen1)
+            && tenkan_sen < kinjun_sen && tenkan_sen1 > kinjun_sen1
+             && tenkan_sen2 > kinjun_sen2)
         {
-            signal = OP_SELL;
+            weaksignal = OP_SELL;
         }
     }
 
@@ -160,11 +169,13 @@ class MichimokuSignal : public BaseSignal {
             && senkou_spanA > senkou_spanB && senkou_spanA1 < senkou_spanB1)
         {
             strongsignal = OP_BUY;
+            weaksignal = OP_BUY;
         }
         if (ihigh0 < MathMin(senkou_spanA, senkou_spanB)
             && senkou_spanA < senkou_spanB && senkou_spanA1 > senkou_spanB1)
         {
             strongsignal = OP_SELL;
+            weaksignal = OP_SELL;
         }
     }
 
@@ -294,19 +305,21 @@ class MichimokuSignal : public BaseSignal {
 
         Refresh();
         chikouSpanTouchLine();
-        if (signal != -1 && actiontype != signal)
+        if (weaksignal != -1 && actiontype != weaksignal)
         {
+            Print("New signal is : " + weaksignal + " close now");
             closesignal = 1;
             return;
         }
-        if (strongsignal != -1 && actiontype != signal)
-        {
+
+        if (insideTheCloud) {
+            Print("Inside the cloud, close now");
             closesignal = 1;
-            return;
         }
+
         if (chikouspanTouchTheCloud)
         {
-            closesignal = 1;
+            //closesignal = 1;
             return;
         }
     }

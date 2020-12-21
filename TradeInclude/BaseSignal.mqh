@@ -11,6 +11,7 @@ class BaseSignal {
         int signal;
         int closesignal;
         int recovermethod;
+        int curzone;
 
         double takeprofit;
         double stoploss;
@@ -21,6 +22,7 @@ class BaseSignal {
         datetime closesignalvaliduntil;
 
         string signalname;
+        int magicNumber;
 
     BaseSignal() {
         signalname = "";
@@ -28,6 +30,7 @@ class BaseSignal {
         signal = -1;
         closesignal = -1;
         recovermethod = -1;
+        curzone = -1;
 
         symbol = "EURUSD";
         period = PERIOD_M15;

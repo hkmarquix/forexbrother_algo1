@@ -3,6 +3,7 @@
 #property strict
 
 #include "BaseFilter.mqh"
+#include "../TradeInclude/orderfunction.mqh"
 
 class ADXFilter : public BaseFilter {
     private:
@@ -30,9 +31,9 @@ class ADXFilter : public BaseFilter {
     void Refresh()
     {
        signal = actiontype;
-       double atr = iATR(symbol, period, 14, 0);
-       //if (atr < 1)
-       //  signal = -1;
+       double atr = iATR(symbol, period, 14, 0) * of_getcurrencrymultipier(symbol);
+       if (atr < 20)
+         signal = -1;
        double adx = iADX(symbol, period, 14, PRICE_CLOSE, MODE_MAIN, 0);
        if (adx < 24)
          signal = -1;

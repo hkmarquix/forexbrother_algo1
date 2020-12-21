@@ -17,7 +17,8 @@ enum signalidlist {
     basicentryid=1012,
     marquisbasicentry = 3001,
     marquisbandentry = 3002,
-    michimoku = 3003
+    michimoku = 3003,
+    cgold = 3004
 };
 enum trademodelist {
     martingale = 1,

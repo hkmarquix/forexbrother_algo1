@@ -167,7 +167,7 @@ class TradeHelper {
         {
             tf_closeAllOrders(symbol, magicNumber);
         }
-        if (resultsignal == 2 && trademode == selfsignal)
+        if (resultsignal == 2)
         {
             if (recovermethod == martingale)
             {
