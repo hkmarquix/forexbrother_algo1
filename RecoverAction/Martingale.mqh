@@ -32,6 +32,7 @@ int SenKouSpanB;
 
     int simplyDoRecovery()
     {
+        double topenorders = tf_countOpenedCurPair(symbol, magicNumber);
         if (!of_selectlastorder(symbol, magicNumber))
             return -1;
 
@@ -48,7 +49,8 @@ int SenKouSpanB;
             return -1;
 
         int neworderi = StrToInteger(param[2]) + 1;
-        double newlots = OrderLots() + initlotstep + (neworderi - 2) * lotincrease_step;
+        //double newlots = OrderLots() + initlotstep + (neworderi - 2) * lotincrease_step;
+        double newlots = wilsonNewMartingaleLotsizeCalculation(topenorders, OrderLots());
 
         tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, param[1], magicNumber);
         return 1;
@@ -56,6 +58,7 @@ int SenKouSpanB;
     }
 
     int doRecovery() {
+        double topenorders = tf_countOpenedCurPair(symbol, magicNumber);
         if (!of_selectlastorder(symbol, magicNumber))
             return -1;
 
@@ -92,7 +95,8 @@ int SenKouSpanB;
         if (diff > currecover && needRecoveryAction(cprice))
         {
             int neworderi = StrToInteger(param[2]) + 1;
-            double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
+            //double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
+            double newlots = wilsonNewMartingaleLotsizeCalculation(topenorders, OrderLots());
 
             tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, recoveryname, magicNumber);
             return 1;
@@ -243,6 +247,32 @@ int SenKouSpanB;
             return true;
         }
         return false;
+    }
+
+    /*
+
+        0.01 0.02 0.04 0.08 -> 0.16
+        0.01 0.04 0.08 -> 0.8
+        0.01 0.02 0.08 -> 0.8
+        0.01 0.02 0.04 -> 0.8
+        0.01 0.08 -> 0.08
+        0.01 0.04 -> 0.04
+
+    */
+    double wilsonNewMartingaleLotsizeCalculation(int torder, double lastOpenLots)
+    {
+        double ntlots = initlotstep;
+        for (int i = 0; i < torder; i++)
+        {
+            ntlots = ntlots * 2;
+        }
+
+        if (ntlots < lastOpenLots)
+        {
+            ntlots = lastOpenLots;
+        }
+
+        return ntlots;
     }
 
 };
