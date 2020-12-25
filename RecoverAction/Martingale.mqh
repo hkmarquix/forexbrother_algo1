@@ -32,7 +32,7 @@ int SenKouSpanB;
 
     int simplyDoRecovery()
     {
-        double topenorders = tf_countOpenedCurPair(symbol, magicNumber);
+        double topenorders = tf_countAllOrders(symbol, magicNumber);
         if (!of_selectlastorder(symbol, magicNumber))
             return -1;
 
@@ -49,7 +49,6 @@ int SenKouSpanB;
             return -1;
 
         int neworderi = StrToInteger(param[2]) + 1;
-        //double newlots = OrderLots() + initlotstep + (neworderi - 2) * lotincrease_step;
         double newlots = wilsonNewMartingaleLotsizeCalculation(topenorders, OrderLots());
 
         tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, param[1], magicNumber);
@@ -58,7 +57,7 @@ int SenKouSpanB;
     }
 
     int doRecovery() {
-        double topenorders = tf_countOpenedCurPair(symbol, magicNumber);
+        double topenorders = tf_countAllOrders(symbol, magicNumber);
         if (!of_selectlastorder(symbol, magicNumber))
             return -1;
 
@@ -95,7 +94,6 @@ int SenKouSpanB;
         if (diff > currecover && needRecoveryAction(cprice))
         {
             int neworderi = StrToInteger(param[2]) + 1;
-            //double newlots = OrderLots() + initlotstep + neworderi * lotincrease_step;
             double newlots = wilsonNewMartingaleLotsizeCalculation(topenorders, OrderLots());
 
             tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, recoveryname, magicNumber);
@@ -187,16 +185,37 @@ int SenKouSpanB;
 
     int takeProfit()
     {
-        int torder = tf_countAllOrders(symbol, magicNumber);
-        if (torder <= 1)
+        if (!of_selectlastorder(symbol, magicNumber))
             return -1;
-        double tprofit = tf_orderTotalProfit(symbol, magicNumber);
-        
-        if (tprofit > targetProfitForEachOrder * torder) {
+        //martingaletakeprofitpips
+        double averageopenprice = tf_averageOpenPrice(symbol, magicNumber);
+        if (averageopenprice == 0)
+        {
+            Print("Invalid average open price");
+            return -1;
+        }
+        double closeprice = 0;
+        double diff = 0;
+        if (OrderType() == OP_BUY)
+        {
+            closeprice = MarketInfo(symbol, MODE_BID);
+            diff = closeprice - averageopenprice;
+        }
+        else if (OrderType() == OP_SELL)
+        {
+            closeprice = MarketInfo(symbol, MODE_ASK);
+            diff = averageopenprice - closeprice;
+        }
+        if (closeprice == 0)
+            return -1;
+        //Print("Diff: " + diff * tf_getCurrencryMultipier(symbol) + "  " + martingaletakeprofitpips * 10);
+
+        if (diff * tf_getCurrencryMultipier(symbol) > martingaletakeprofitpips * 10)
+        {
             tf_closeAllOrders(symbol, magicNumber);
             return 1;
         }
-
+        
         return -1;
     }
 
@@ -262,12 +281,24 @@ int SenKouSpanB;
     double wilsonNewMartingaleLotsizeCalculation(int torder, double lastOpenLots)
     {
         double ntlots = initlotstep;
-        for (int i = 0; i < torder; i++)
+
+        Print("wilsonNewMartingaleLotsizeCalculation " + martingaletype);
+        if (martingaletype == 1)
         {
-            ntlots = ntlots * 2;
+            ntlots =  initlots + initlotstep + torder * lotincrease_step;
+        }
+        else if (martingaletype == 2)
+        {
+            for (int i = 0; i < torder; i++)
+            {
+                ntlots = ntlots * martingalefactor;
+                Print("New lots: " + ntlots);
+            }
         }
 
-        if (ntlots < lastOpenLots)
+
+
+        if (!boundMartingaleLotsizenotsmallerthanLastOrder && ntlots < lastOpenLots)
         {
             ntlots = lastOpenLots;
         }

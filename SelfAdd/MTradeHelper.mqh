@@ -37,6 +37,7 @@ class MTradeHelper : public TradeHelper {
             totalsignal++;
         if (use_cgold == 1)
             totalsignal++;
+        Print("Total signal size: " + totalsignal);
         ArrayResize(signalist, totalsignal , 0);
 
         initSignal(0);
@@ -71,7 +72,7 @@ class MTradeHelper : public TradeHelper {
             signalist[currentsignali].period = period;
             signalist[currentsignali++].symbol = symbol;
         }
-        if (use_cgold = 1)
+        if (use_cgold == 1)
         {
             signalist[currentsignali] = new CGoldSignal();
             signalist[currentsignali].period = period;

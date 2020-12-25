@@ -8,10 +8,12 @@
 #include "../RecoverAction/Martingale.mqh"
 #include "../RecoverAction/ZoneCap.mqh"
 #include "../Filter/TimeFilter.mqh"
+#include "reportfunction.mqh"
 
 class TradeHelper {
     private:
-        
+        datetime lastsync;
+
     public:
         BaseSignal *signalist[];
         int totalsignal;
@@ -25,7 +27,7 @@ class TradeHelper {
         int presettrademode;
 
     TradeHelper() {
-
+        lastsync = TimeCurrent();
         symbol = "EURUSD";
         period = PERIOD_M15;
         magicNumber = default_magicNumber;
@@ -73,6 +75,12 @@ class TradeHelper {
 
         } else {
             checkHasOrderNextAction();
+        }
+
+        if (lastsync < TimeCurrent())
+        {
+            rpt_syncclosedtrade();
+            lastsync = TimeCurrent() + 10 * 60;
         }
 
     }
@@ -125,9 +133,13 @@ class TradeHelper {
 
     void checkHasOrderNextAction() {
         int torders = tf_countAllOrders(symbol, magicNumber);
-        if (torders > 0)
+        if (torders == 1)
         {
             checkSignalCloseAction();
+            checkRecoverAction();
+        }
+        else if (torders > 1)
+        {
             checkRecoverAction();
         }
     }
