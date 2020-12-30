@@ -6,6 +6,7 @@
 #include "MarquisBollingerEntry.mqh"
 #include "MichimokuSignal.mqh"
 #include "CGoldSignal.mqh"
+#include "MarquisComplex.mqh"
 #include "../TradeInclude/TradeHelper.mqh"
 #include "../TradeInclude/BasicEntry.mqh"
 #include "../TradeInclude/BaseSignal.mqh"
@@ -14,6 +15,7 @@
 #include "../RecoverAction/ZoneCap.mqh"
 #include "../Filter/TimeFilter.mqh"
 #include "../Filter/ADXFilter.mqh"
+#include "../Filter/CloseTimeFilter.mqh"
 
 class MTradeHelper : public TradeHelper {
     private:
@@ -36,6 +38,8 @@ class MTradeHelper : public TradeHelper {
         if (use_michimoku == 1)
             totalsignal++;
         if (use_cgold == 1)
+            totalsignal++;
+        if (use_mcomplex == 1)
             totalsignal++;
         Print("Total signal size: " + totalsignal);
         ArrayResize(signalist, totalsignal , 0);
@@ -80,6 +84,14 @@ class MTradeHelper : public TradeHelper {
             signalist[currentsignali].curzone = curzone;
             signalist[currentsignali++].symbol = symbol;
         }
+        if (use_mcomplex == 1)
+        {
+            signalist[currentsignali] = new MarquisComplex();
+            signalist[currentsignali].period = period;
+            signalist[currentsignali].magicNumber = magicNumber;
+            signalist[currentsignali].curzone = curzone;
+            signalist[currentsignali++].symbol = symbol;
+        }
         
     }
 
@@ -112,6 +124,11 @@ class MTradeHelper : public TradeHelper {
             CGoldSignal *cg = (CGoldSignal *)bsignal;
             cg.Refresh();
         }
+        if (bsignal.signalid == mcomplex)
+        {
+            MarquisComplex *mc = (MarquisComplex *)bsignal;
+            mc.Refresh();
+        }
     }
 
 
@@ -123,6 +140,7 @@ class MTradeHelper : public TradeHelper {
         tf.period = period;
         tf.actiontype = signal;
         tf.lotsize = lotsize;
+        tf.magicNumber = magicNumber;
         tf.Refresh();
         int tsignal = tf.signal;
         delete(tf);
@@ -135,6 +153,7 @@ class MTradeHelper : public TradeHelper {
         adxf.period = period;
         adxf.actiontype = signal;
         adxf.lotsize = lotsize;
+        adxf.magicNumber = magicNumber;
         adxf.Refresh();
         tsignal = adxf.signal;
         delete(adxf);
@@ -142,6 +161,18 @@ class MTradeHelper : public TradeHelper {
             return false;
         }
 
+        CloseTimeFilter *ctf = new CloseTimeFilter();
+        ctf.symbol = symbol;
+        ctf.period = period;
+        ctf.actiontype = signal;
+        ctf.lotsize = lotsize;
+        ctf.magicNumber = magicNumber;
+        ctf.Refresh();
+        tsignal = ctf.signal;
+        delete(ctf);
+        if (tsignal != signal) {
+            return false;
+        }
 
         return true;
     }
@@ -174,6 +205,11 @@ class MTradeHelper : public TradeHelper {
             CGoldSignal *cg = (CGoldSignal *)bsignal;
             cg.RefreshCloseSignal(OrderType(), OrderOpenPrice(), OrderOpenTime());
         }
+        else if (bsignal.signalid == mcomplex)
+        {
+            MarquisComplex *mc = (MarquisComplex *)bsignal;
+            mc.RefreshCloseSignal(OrderType(), OrderOpenPrice(), OrderOpenTime());
+        }
     }
 
 
@@ -188,7 +224,7 @@ class MTradeHelper : public TradeHelper {
             martin.magicNumber = magicNumber;
             martin.curzone = curzone;
             martin.currecover = currecover;
-            martin.takeProfit();
+            //martin.takeProfit();
             int res = martin.doRecovery();
             if (res == 2)
             {

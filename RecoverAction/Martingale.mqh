@@ -97,6 +97,8 @@ int SenKouSpanB;
             double newlots = wilsonNewMartingaleLotsizeCalculation(topenorders, OrderLots());
 
             tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, recoveryname, magicNumber);
+
+            calTakeProfitOnAllOrders();
             return 1;
         }
         
@@ -182,6 +184,32 @@ int SenKouSpanB;
          return false;
     }
 
+    void calTakeProfitOnAllOrders()
+    {
+        if (!of_selectlastorder(symbol, magicNumber))
+            return;
+        //martingaletakeprofitpips
+        double averageopenprice = tf_averageOpenPrice(symbol, magicNumber);
+        if (averageopenprice == 0)
+        {
+            Print("Invalid average open price");
+            return;
+        }
+        double closeprice = 0;
+        double newprice = 0;
+        if (OrderType() == OP_BUY)
+        {
+            closeprice = MarketInfo(symbol, MODE_BID);
+            newprice = averageopenprice + martingaletakeprofitpips * 10 / (double)tf_getCurrencryMultipier(symbol);
+        }
+        else if (OrderType() == OP_SELL)
+        {
+            closeprice = MarketInfo(symbol, MODE_ASK);
+            newprice = averageopenprice - martingaletakeprofitpips * 10 / (double)tf_getCurrencryMultipier(symbol);
+        }
+
+        tf_setTakeProfitStopLoss(symbol, OrderType(), magicNumber, 0, newprice);
+    }
 
     int takeProfit()
     {

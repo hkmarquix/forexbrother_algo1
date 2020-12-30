@@ -36,6 +36,24 @@ bool of_selectlastorder(string symbol, int magicNumber) {
     return false;
 }
 
+bool of_selectlastclosedorder(string symbol, int magicNumber) {
+
+    int maxorderi = -1; 
+    int lastpos = -1;
+    string cstr = "";
+
+    for (int i = OrdersHistoryTotal() - 1; i >= 0; i--) {
+        OrderSelect(i, SELECT_BY_POS, MODE_HISTORY);
+        if (OrderMagicNumber() != magicNumber || OrderSymbol() != symbol)
+            continue;
+        if (!(OrderType() == OP_BUY || OrderType() == OP_SELL))
+            continue;
+
+        return true;
+    }
+
+    return false;
+}
 
 bool of_selectfirstorder(string symbol, int magicNumber)
 {

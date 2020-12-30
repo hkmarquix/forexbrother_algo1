@@ -62,6 +62,18 @@ void tf_createorder(string symbol, int ordertype, double lots, string orderi, st
     }
 }
 
+void tf_setTakeProfitStopLoss(string symbol, int ordertype, int magicNumber, double stoploss, double takeprofit)
+{
+    for (int i = 0; i < OrdersTotal(); i++) {
+        OrderSelect(i, SELECT_BY_POS, MODE_TRADES);
+        if (OrderMagicNumber() != magicNumber || OrderSymbol() != symbol)
+            continue;
+        if (OrderType() != OP_BUY && OrderType() != OP_SELL)
+            continue;
+        OrderModify(OrderTicket(), OrderOpenPrice(), stoploss, takeprofit, 0, Yellow);
+    }
+}
+
 
 int tf_getCurrencryMultipier(string symbol)
 {

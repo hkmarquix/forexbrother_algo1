@@ -18,7 +18,8 @@ enum signalidlist {
     marquisbasicentry = 3001,
     marquisbandentry = 3002,
     michimoku = 3003,
-    cgold = 3004
+    cgold = 3004,
+    mcomplex = 3005
 };
 enum trademodelist {
     martingale = 1,
@@ -30,7 +31,8 @@ enum trademodelist {
 };
 enum filterlist {
   TIMEFILTER = 1,
-  ADXFILTER = 2
+  ADXFILTER = 2,
+  CTIMEFILTER = 3
 };
 
 int default_magicNumber = 18291;

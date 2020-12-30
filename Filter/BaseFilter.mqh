@@ -21,10 +21,13 @@ class BaseFilter {
         int period;
         string filtername;
 
+        int magicNumber;
+
     BaseFilter() {
         filtername = "";
         filterid = -1;
         signal = -1;
+        magicNumber = -1;
         
         symbol = "EURUSD";
         period = PERIOD_M15;
