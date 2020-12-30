@@ -114,9 +114,10 @@ class TradeHelper {
             BaseSignal *bsignal = (BaseSignal *)signalist[i];
             signalRefresh(bsignal);
             
-            if (createOrderFilter(bsignal.signal, initlots) && bsignal.signal != -1)
+            if (bsignal.signal != -1 && createOrderFilter(bsignal.signal, initlots))
             {
-                Print("Create order now");
+                double curprice = MarketInfo(symbol, MODE_BID);
+                Print("Create order now " + bsignal.signal + "/" + curprice + "/" + bsignal.stoploss + "/" + bsignal.takeprofit + "/" + bsignal.signalname);
                 tf_createorder(symbol, bsignal.signal, initlots, "1", "", bsignal.stoploss, bsignal.takeprofit, bsignal.signalname, magicNumber);
                 trademode = presettrademode;
                 return;

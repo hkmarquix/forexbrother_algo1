@@ -31,7 +31,10 @@ class CloseTimeFilter : public BaseFilter {
     {
         signal = actiontype;
 
-        of_selectlastclosedorder(symbol, magicNumber);
+        if (!of_selectlastclosedorder(symbol, magicNumber))
+            return;
+        if (OrderType() != actiontype)
+            return;
         //Print("Last order close time: " + OrderCloseTime());
        if (TimeCurrent() - OrderCloseTime() < period * 60)
        {

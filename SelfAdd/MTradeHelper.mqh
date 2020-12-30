@@ -145,6 +145,7 @@ class MTradeHelper : public TradeHelper {
         int tsignal = tf.signal;
         delete(tf);
         if (tsignal != signal) {
+            //Print("Order filtered by timefilter");
             return false;
         }
 
@@ -158,6 +159,7 @@ class MTradeHelper : public TradeHelper {
         tsignal = adxf.signal;
         delete(adxf);
         if (tsignal != signal) {
+            //Print("Order filtered by adxfilter");
             return false;
         }
 
@@ -171,6 +173,7 @@ class MTradeHelper : public TradeHelper {
         tsignal = ctf.signal;
         delete(ctf);
         if (tsignal != signal) {
+            //Print("Order filtered by closetimefilter");
             return false;
         }
 

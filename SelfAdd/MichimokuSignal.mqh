@@ -39,6 +39,8 @@ class MichimokuSignal : public BaseSignal {
         double mfi1;
 
         bool insideTheCloud;
+        bool enterUpCloud;
+        bool enterLowCloud;
         bool chikouspanTouchTheCloud;
 
         double farawayindex;
@@ -114,21 +116,112 @@ class MichimokuSignal : public BaseSignal {
         checkBuySellSignalOfTenKanKiJunCross();
         if (signal == -1 && strongsignal == -1)
             checkSpanASpanBCrossSignal();
-        checkCloudFarAwayIndex();
         checkCrossCloudSignalStrongBeforeTenkanKinJunCross();
 
         signal = strongsignal;
+        checkCloudFarAwayIndex();
+
+        if (signal == -1)
+            signal = weaksignal;
+        signal = checkMacd(signal);
+
+        if (pricecrossbeautifulindex > 0 && signal != -1) {
+            Print("Price cross index: " + pricecrossbeautifulindex);
+        }
+
+        /*if (didOpenOrderAfterFirstLeaveCloud(signal))
+        {
+            signal = -1;
+            weaksignal = -1;
+            strongsignal = -1;
+        }*/
+
+    }
+
+    int checkMacd(int actiontype)
+    {
+        double macdm = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 0);
+        double macds = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 0);
+        double macdm1 = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 1);
+        double macds1 = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 1);
+        if (actiontype == OP_BUY && macdm > macdm1)
+            return actiontype;
+        if (actiontype == OP_SELL && macdm < macdm1)
+            return actiontype;
+
+        return -1;
+    }
+
+    int checkFirstLeaveCloud(int actiontype)
+    {
+        double t_close;
+        double t_tenkan_sen;
+        double t_kinjun_sen;
+        double t_senkou_spanA;
+        double t_senkou_spanB;
+        bool firstLeaveCloud = false;
+        for (int i = 0; i < 100; i++)
+        {
+            t_close = iClose(symbol, period, i);
+        
+            t_tenkan_sen   = iIchimoku(symbol,period,TenKanSen,KijunSen,SenKouSpanB,MODE_TENKANSEN,i);
+            t_kinjun_sen   = iIchimoku(symbol,period,TenKanSen,KijunSen,SenKouSpanB,MODE_KIJUNSEN,i);
+            t_senkou_spanA = iIchimoku(symbol,period,TenKanSen,KijunSen,SenKouSpanB,MODE_SENKOUSPANA,i);
+            t_senkou_spanB = iIchimoku(symbol,period,TenKanSen,KijunSen,SenKouSpanB,MODE_SENKOUSPANB,i);
+
+            if (actiontype == OP_BUY)
+            {
+                if (i == 0 && t_close < MathMax(t_senkou_spanA, t_senkou_spanB))
+                {
+                    return -1;
+                }
+                if (t_close < MathMax(t_senkou_spanA, t_senkou_spanB))
+                {
+                    return i;
+                }
+            }
+            else if (actiontype == OP_SELL)
+            {
+                if (i == 0 && t_close > MathMax(t_senkou_spanA, t_senkou_spanB))
+                {
+                    return -1;
+                }
+                if (t_close > MathMax(t_senkou_spanA, t_senkou_spanB))
+                {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    bool didOpenOrderAfterFirstLeaveCloud(int actiontype)
+    {
+        int ic = checkFirstLeaveCloud(actiontype);
+        datetime opent = iTime(symbol, period, ic);
+        if (of_selectlastclosedorder(symbol, magicNumber))
+        {
+            if (OrderOpenTime() > opent)
+                return true;
+        }
+        return false;
     }
 
     void checkInsideTheCloud()
     {
+        enterUpCloud = false;
+        enterLowCloud = false;
         insideTheCloud = false;
-        if (ihigh0 < MathMax(senkou_spanA, senkou_spanB) && ihigh0 > MathMin(senkou_spanA, senkou_spanB)) {
+        if (close0 < MathMax(senkou_spanA, senkou_spanB) && close0 > MathMin(senkou_spanA, senkou_spanB)
+        && ihigh0 > MathMax(senkou_spanA, senkou_spanB)) {
             insideTheCloud = true;
+            enterUpCloud = true;
             return;
         }
-        if (ilow0 < MathMax(senkou_spanA, senkou_spanB) && ilow0 > MathMin(senkou_spanA, senkou_spanB)) {
+        if (close0 < MathMax(senkou_spanA, senkou_spanB) && close0 > MathMin(senkou_spanA, senkou_spanB)
+            && ilow0 < MathMin(senkou_spanA, senkou_spanB)) {
             insideTheCloud = true;
+            enterLowCloud = true;
             return;
         }
     }
@@ -139,6 +232,7 @@ class MichimokuSignal : public BaseSignal {
             && tenkan_sen > kinjun_sen && tenkan_sen1 < kinjun_sen1
              && tenkan_sen2 < kinjun_sen2)
         {
+            Print("Tenkan > kinjun & low > span, buy now [S]");
             strongsignal = OP_BUY;
             weaksignal = OP_BUY;
         }
@@ -146,12 +240,14 @@ class MichimokuSignal : public BaseSignal {
             && tenkan_sen > kinjun_sen && tenkan_sen1 < kinjun_sen1
              && tenkan_sen2 < kinjun_sen2)
         {
+            Print("Tenkan > kinjun & low > span, buy now [W]");
             weaksignal = OP_BUY;
         }
         else if (ihigh0 < MathMin(senkou_spanA, senkou_spanB)
             && tenkan_sen < kinjun_sen && tenkan_sen1 > kinjun_sen1
              && tenkan_sen2 > kinjun_sen2)
         {
+            Print("Tenkan < kinjun & high < span, sell now [S]");
             strongsignal = OP_SELL;
             weaksignal = OP_SELL;
         }
@@ -159,6 +255,7 @@ class MichimokuSignal : public BaseSignal {
             && tenkan_sen < kinjun_sen && tenkan_sen1 > kinjun_sen1
              && tenkan_sen2 > kinjun_sen2)
         {
+            Print("Tenkan < kinjun & low > span, sell now [W]");
             weaksignal = OP_SELL;
         }
     }
@@ -168,12 +265,14 @@ class MichimokuSignal : public BaseSignal {
         if (ilow0 > MathMax(senkou_spanA, senkou_spanB)
             && senkou_spanA > senkou_spanB && senkou_spanA1 < senkou_spanB1)
         {
+            Print("span cross [b]");
             strongsignal = OP_BUY;
             weaksignal = OP_BUY;
         }
         if (ihigh0 < MathMin(senkou_spanA, senkou_spanB)
             && senkou_spanA < senkou_spanB && senkou_spanA1 > senkou_spanB1)
         {
+            Print("span cross [s]");
             strongsignal = OP_SELL;
             weaksignal = OP_SELL;
         }
@@ -182,7 +281,15 @@ class MichimokuSignal : public BaseSignal {
     void checkCloudFarAwayIndex()
     {
         farawayindex = 0;
+        if (signal == -1)
+            return;
 
+        int lcloud = checkFirstLeaveCloud(signal);
+        if (lcloud > 10)
+        {
+            farawayindex = lcloud;
+            signal = -1;
+        }
     }
 
     void checkCrossCloudSignalStrongBeforeTenkanKinJunCross(int windowsBefore = 0)
@@ -297,6 +404,21 @@ class MichimokuSignal : public BaseSignal {
         }
     }
 
+    bool tenkanCross(int actiontype)
+    {
+        if (actiontype == OP_BUY)
+        {
+            if (tenkan_sen < kinjun_sen)
+                return true;
+        }
+        else if (actiontype == OP_SELL)
+        {
+            if (kinjun_sen > kinjun_sen)
+                return true;
+        }
+        return false;
+    }
+
     void RefreshCloseSignal(int actiontype, double entryprice)
     {
         closesignal = -1;
@@ -304,6 +426,21 @@ class MichimokuSignal : public BaseSignal {
             return;
 
         Refresh();
+
+        if (closeWithMovingAverage(actiontype))
+        {
+            Print("Closing with moving average");
+            closesignal = 1;
+            return;
+        }
+
+        if (tenkanCross(actiontype))
+        {
+            Print("TenkanKinJun Cross, close now");
+            closesignal = 1;
+            return;
+        }
+
         chikouSpanTouchLine();
         if (weaksignal != -1 && actiontype != weaksignal)
         {
@@ -312,7 +449,12 @@ class MichimokuSignal : public BaseSignal {
             return;
         }
 
-        if (insideTheCloud) {
+        if (insideTheCloud && enterUpCloud && actiontype == OP_BUY) {
+            Print("Inside the cloud, close now");
+            closesignal = 1;
+        }
+
+        if (insideTheCloud && enterLowCloud && actiontype == OP_SELL) {
             Print("Inside the cloud, close now");
             closesignal = 1;
         }
@@ -322,6 +464,24 @@ class MichimokuSignal : public BaseSignal {
             //closesignal = 1;
             return;
         }
+    }
+
+    int closeWithMovingAverage(int actiontype)
+    {
+        double ma0 = iMA(symbol, period, 20, 0, MODE_SMA, PRICE_CLOSE, 0);
+        double ma1 = iMA(symbol, period, 20, 0, MODE_SMA, PRICE_CLOSE, 1);
+
+        if (actiontype == OP_BUY)
+        {
+            if (ma0 <= ma1)
+                return 1;
+        }
+        else if (actiontype == OP_SELL)
+        {
+            if (ma0 >= ma1)
+                return 1;
+        }
+        return 0;
     }
 
 };

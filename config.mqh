@@ -17,8 +17,8 @@ int maxopenedpair = 6;
 
 string EA_NAME = "fba1";
 
-int use_mcomplex = 0;
-int use_cgold = 1;
+int use_mcomplex = 1;
+int use_cgold = 0;
 int use_michimoku = 0;
 int use_marquisbandentry = 0;
 int use_marquisbasicstochasticmethod = 0;
@@ -37,8 +37,8 @@ int currenttrademode = 2;
 */
 
 int maxCommentLevel = 20;
-string curlist[] =  { "XAUUSD" };//, "EURJPY", "USDJPY", "USDCHF", "GBPAUD" };
-int curperiod[] = { PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15 };
-int curtrademode[] = { 1, 2, 2, 2, 2 };
+string curlist[] =  { "EURJPY" };//, "EURJPY", "USDJPY", "USDCHF", "GBPAUD" };
+int curperiod[] = { PERIOD_H1, PERIOD_M15, PERIOD_M15, PERIOD_M15, PERIOD_M15 };
+int curtrademode[] = { 4, 2, 2, 2, 2 };
 double currecover[] = { 120, 120, 120, 120, 120 };
 double curzone[] = { 100, 500, 500, 500, 500 };
