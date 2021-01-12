@@ -61,35 +61,116 @@ class CGoldSignal : public BaseSignal {
         sd0 = iStochastic(symbol, period, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 0);
         sk1 = iStochastic(symbol, period, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 1);
         sd1 = iStochastic(symbol, period, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 1);
+        
+        double uval = iBands(symbol, period, 15, 2, 0, PRICE_CLOSE, MODE_UPPER, 0);
+      double mval = iBands(symbol, period, 15, 2, 0, PRICE_CLOSE, MODE_MAIN, 0);
+      double lval = iBands(symbol, period, 15, 2, 0, PRICE_CLOSE, MODE_LOWER, 0);
+            
+      double uval1 = iBands(symbol, period, 15, 2, 0, PRICE_CLOSE, MODE_UPPER, 1);
+      double mval1 = iBands(symbol, period, 15, 2, 0, PRICE_CLOSE, MODE_MAIN, 1);
+      double lval1 = iBands(symbol, period, 15, 2, 0, PRICE_CLOSE, MODE_LOWER, 1);
+        
+        double ema80 = iMA(symbol, period, 80, 0, MODE_EMA, PRICE_CLOSE, 0);
 
         //if (openedtrade > 9)
         //    return;
-
+        double cprice = 0;
+        if (OrderType() == OP_BUY) {
+            cprice = MarketInfo(symbol, MODE_ASK);
+        }
+        else
+        {
+            cprice = MarketInfo(symbol, MODE_BID);
+        }
+        
+        if (uval - 1 > uval1 && lval < lval1 - 1)
+        {
+            if (cprice > mval)
+            {
+               signal = OP_BUY;
+            }
+            else
+            {
+               signal = OP_SELL;
+            }
+        }
 
         if (sk0 > sk1 && sk0 < 40 && sk0 > sd0
-        && !(macdm * 0.9 < macds || macdm < macdm1
-        && checkHigherTimeFrameForTradeSignal(OP_BUY, period))
+        && !hasStrongSellSignalFromMACD()
+        && sk15Protection(OP_BUY)
+        && !(uval > uval1 && lval < lval1)
+        //&& cprice > ema80
+        //&& checkHigherTimeFrameForTradeSignal(OP_BUY, period)
         )
         {
-            int ii = findIncreaseDecreasePowerWithStochastic(OP_BUY, TimeCurrent() - 100 * 60);
+            //int ii = findIncreaseDecreasePowerWithStochastic(OP_BUY, TimeCurrent() - 100 * 60);
             //openedtrade++;
-            if (ii > 0)
+            //if (ii > 0)
                 signal = OP_BUY;
 
         }
         if (sk0 < sk1 && sk0 > 60 && sk0 < sd0
-        && !(macdm * 0.9 > macds || macdm > macdm1
-        && checkHigherTimeFrameForTradeSignal(OP_SELL, period))
+        && !hasStrongBuySignalFromMACD()
+        && sk15Protection(OP_SELL)
+        && !(uval > uval1 && lval < lval1)
+        //&& cprice < ema80
+        //&& checkHigherTimeFrameForTradeSignal(OP_SELL, period)
         )
         {
-            int ii = findIncreaseDecreasePowerWithStochastic(OP_SELL, TimeCurrent() - 100 * 60);
+            //int ii = findIncreaseDecreasePowerWithStochastic(OP_SELL, TimeCurrent() - 100 * 60);
             //openedtrade++;
-            if (ii > 0)
+            //if (ii > 0)
                 signal = OP_SELL;
         }
         signalValidUntil = TimeCurrent() + 60;
 
-
+    }
+    
+    bool sk15Protection(int actiont)
+    {
+      double m15_sk0 = iStochastic(symbol, PERIOD_M15, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 0);
+      double m15_sd0 = iStochastic(symbol, PERIOD_M15, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 0);
+      if (actiont == OP_SELL)
+      {
+         if (m15_sk0 < 50 || m15_sk0 > 85)
+            return false;
+      }
+      if (actiont == OP_BUY)
+      {
+         if (m15_sk0 > 50 || m15_sk0 < 15)
+            return false;
+      }
+      double h1_sk0 = iStochastic(symbol, PERIOD_H1, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 0);
+      double h1_sd0 = iStochastic(symbol, PERIOD_H1, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 0);
+      if (actiont == OP_SELL)
+      {
+         if (h1_sk0 > 80)
+            return false;
+      }
+      if (actiont == OP_BUY)
+      {
+         if (h1_sk0 < 20)
+            return false;
+      }
+      return true;
+    }
+    
+    bool hasStrongSellSignalFromMACD()
+    {
+      if (macds - macdm > 1.5)
+         return true;
+      if (macdm1 > macdm )
+         return true;
+        return false;
+    }
+    
+    bool hasStrongBuySignalFromMACD()
+    {
+      if (macdm - macds > 1.5)
+         return true;
+      if (macdm > macdm1 )
+         return true;
+      return false;
     }
 
     bool checkHigherTimeFrameForTradeSignal(int ordertype, int _period)
@@ -148,75 +229,24 @@ class CGoldSignal : public BaseSignal {
         if (actiontype == OP_SELL)
             diff = (entryprice - MarketInfo(symbol, MODE_ASK)) * tf_getCurrencryMultipier(symbol);
 
-        double hmacdm = iMACD(symbol, tperiod, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 0);
-        double hmacds = iMACD(symbol, tperiod, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 0);
-
-        double hmacdm1 = iMACD(symbol, tperiod, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 1);
-        double hmacds1 = iMACD(symbol, tperiod, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 1);
-
-        double hsk0 = iStochastic(symbol, tperiod, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 0);
-        double hsd0 = iStochastic(symbol, tperiod, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 0);
-        double hsk1 = iStochastic(symbol, tperiod, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 1);
-        double hsd1 = iStochastic(symbol, tperiod, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 1);
-
-        if (diff > 0)
+        if (totalorder == 1)
         {
-            if (actiontype == OP_BUY && sk0 < sk1 && sk0 < sd0)
+            double tprofit = tf_orderTotalProfit(symbol, magicNumber);
+            if (tprofit > targetProfitForEachOrder)
             {
-                closesignal = 1;
-                return;
+               closesignal = 1;
+               return;
             }
-            if (actiontype == OP_SELL && sk0 > sk1 && sk0 > sd0)
-            {
-                closesignal = 1;
-                return;
-            }
+            
+             double iatr = iATR(symbol, period, 14, 0);
+             double adx = iADX(symbol, period, 14, PRICE_CLOSE, MODE_MAIN, 0);
+             if (adx < 25 && tprofit > 0.3)
+             {
+               closesignal = 1;
+               return;
+             }
         }
-        else
-        {
-            if (actiontype == OP_BUY
-                    && hmacds * 0.7 - hmacdm > 0 && hmacdm < hmacdm1)
-                {
-                    closesignal = 1;
-                    return;
-                }
-                if (actiontype == OP_SELL
-                    && hmacdm * 0.7 - hmacds > 0 && hmacdm > hmacdm1)
-                {
-                    closesignal = 1;
-                    return;
-                }
-        }
-        
-/*
-        if (diff * -1 > curzone) { 
-
-            //int rindex = findIncreaseDecreasePowerWithStochastic(actiontype, orderopentime);
-
-            //if (rindex > 0)
-            //{
-                if (actiontype == OP_BUY
-                    && macds * 0.7 - macdm > 0 && macdm < macdm1 && macds < 0)
-                {
-                    closesignal = 1;
-                    return;
-                }
-                if (actiontype == OP_SELL
-                    && macdm * 0.7 - macds > 0 && macdm > macdm1 && macds > 0)
-                {
-                    closesignal = 1;
-                    return;
-                }
-
-                //Print("Martingale ... GO  ");
-                //recovermethod = martingale;
-                //closesignal = 2;
-                //return;
-            //}
-
-        }
-*/
-
+       
     }
 
     int keepHighOrLowForAPeriodOfTime(int actiontype)

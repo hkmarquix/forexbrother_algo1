@@ -48,7 +48,7 @@ class MarquisComplex : public BaseSignal {
         int buysellindex = findStochasticDivergenceOnPriceDroporRise();
         if (buysellindex > 0)
         {
-            if (macdCrossRising(OP_BUY) < 10 && mfiSlope() > 0.4 && sk_arr[0] < 30)// && mfi_arr[0] > 30 && sk_arr[0] > sk_arr[1])
+            if (macdCrossRising(OP_BUY) < 10 && mfiSlope() > 0.4)// && mfi_arr[0] > 30 && sk_arr[0] > sk_arr[1])
             {
                 //Print(trademessage);
                 signal = OP_BUY;
@@ -56,7 +56,7 @@ class MarquisComplex : public BaseSignal {
         }
         else if (buysellindex < 0)
         {
-            if (macdCrossRising(OP_SELL) < 10 && mfiSlope() < -0.4 && sk_arr[0] > 70)// && mfi_arr[0] < 70 && sk_arr[0] < sk_arr[1])
+            if (macdCrossRising(OP_SELL) < 10 && mfiSlope() < -0.4)// && mfi_arr[0] < 70 && sk_arr[0] < sk_arr[1])
             {
                 //Print(trademessage);
                 signal = OP_SELL;
@@ -71,6 +71,10 @@ class MarquisComplex : public BaseSignal {
     {
         closesignal = -1;
 
+        if (signal != actiontype)
+        {
+            closesignal = 1;
+        }
 
     }
 

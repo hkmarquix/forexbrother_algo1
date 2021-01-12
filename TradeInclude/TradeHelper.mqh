@@ -125,7 +125,7 @@ class TradeHelper {
         }
     }
 
-// Self include this and modify
+// Self include this and modify, this is just a sample
     virtual bool createOrderFilter(int signal, double lotsize)
     {
 
@@ -193,9 +193,13 @@ class TradeHelper {
                 delete(martin);
             }
         }
+        if (resultsignal == 3)
+        {
+            // nothing to do
+        }
     }
 
-// Self include this and modify
+// Self include this and modify, this is just a sample
     virtual void checkRecoverAction()
     {
         if (trademode == martingale)

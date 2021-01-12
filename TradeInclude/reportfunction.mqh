@@ -99,6 +99,8 @@ void rpt_syncclosedtrade()
         rpt_closedtrade(OrderSymbol(), IntegerToString(OrderTicket()), OrderClosePrice(), OrderSwap(), OrderCommission(), OrderProfit());
         rpt_ticketlist[rpt_lastindex] = OrderTicket();
         rpt_lastindex++;
+        if (rpt_lastindex >= ArraySize(rpt_ticketlist))
+            rpt_lastindex = 0;
     }
 
 }

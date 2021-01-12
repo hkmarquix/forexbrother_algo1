@@ -40,6 +40,7 @@ double closeprice = 0.0;
 bool keepsilence = false;
 
 int processOrders = 0;
+int lastfire = -1;
 
 MTradeHelper *tHelper;
 MTradeHelper *curPairs[];
@@ -107,8 +108,16 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
+   /*int m = TimeMinute(TimeCurrent());
+   int s=TimeSeconds(TimeCurrent());
+   if (s == 0 && m != lastfire) {
+      lastfire = m;
+   }
+   else
+      return;*/
     if (processOrders == 1)
       return;
+    
     processOrders = 1;
     for (int i = 0; i < ArraySize(curPairs); i++)
       {

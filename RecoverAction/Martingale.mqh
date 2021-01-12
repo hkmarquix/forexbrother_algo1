@@ -70,9 +70,7 @@ int SenKouSpanB;
 
         datetime lastopentime = OrderOpenTime();
         
-        if (orderi == 1 && TimeCurrent() - lastopentime < 5 * 60)
-            return -1;
-        if (orderi > 1 && TimeCurrent() - lastopentime < 20 * 60)
+        if (TimeCurrent() - lastopentime < 30 * 60)
             return -1;
         
         //Print("Last open time: " + lastopentime + " C: " + OrderComment());
@@ -91,6 +89,7 @@ int SenKouSpanB;
 
         double diff = MathAbs(cprice - lastprice) * of_getcurrencrymultipier(symbol);
 
+        Print("Diff: " + diff + " CR: " + currecover);
         if (diff > currecover && needRecoveryAction(cprice))
         {
             int neworderi = StrToInteger(param[2]) + 1;
@@ -98,7 +97,7 @@ int SenKouSpanB;
 
             tf_createorder(symbol, OrderType(), newlots, IntegerToString(neworderi), "", 0, 0, recoveryname, magicNumber);
 
-            calTakeProfitOnAllOrders();
+            //calTakeProfitOnAllOrders();
             return 1;
         }
         
@@ -210,8 +209,22 @@ int SenKouSpanB;
 
         tf_setTakeProfitStopLoss(symbol, OrderType(), magicNumber, 0, newprice);
     }
-
+    
     int takeProfit()
+    {
+      double tprofit = tf_orderTotalProfit(symbol, magicNumber);
+      int torder = tf_countAllOrders(symbol, magicNumber);
+      if (torder > 4)
+         torder = 4;
+      if (tprofit > torder * targetProfitForEachOrder)
+      {
+         tf_closeAllOrders(symbol, magicNumber);
+            return 1;
+      }
+     return -1;
+    }
+
+    int takeProfitWithPips()
     {
         if (!of_selectlastorder(symbol, magicNumber))
             return -1;
@@ -257,40 +270,109 @@ int SenKouSpanB;
      double mastart = iMA(symbol, period, 5, 0, MODE_EMA, PRICE_CLOSE, 1);//windowToCheck - 1);
 
      double iatr = iATR(symbol, period, 14, 0);
+     double imfi = iATR(symbol, period, 14, 0);
+     double imfi1 = iATR(symbol, period, 14, 1);
+     
+     /*if (iatr < 1.2)
+     {
+      Print("ATR protection");
+      return false;
+     }*/
 
      double maslope = (maend - mastart) / 2;
 
      if (actiontype == OP_BUY && maslope < -2) //checkHighestI == windowToCheck - 1)
      {
+       Print("Slope protection _::: BUY");
        return false;
      }
      if (actiontype == OP_SELL && maslope > 2) // checkLowestI == windowToCheck -1)
      {
+       Print("Slope protection _::: SELL");
        return false;
      }
 
       double macdm = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 0);
-        double macds = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 0);
+      double macds = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 0);
 
-        double macdm1 = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 1);
-        double macds1= iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 1);
+      double macdm1 = iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_MAIN, 1);
+      double macds1= iMACD(symbol, period, 12, 26, 9, PRICE_CLOSE, MODE_SIGNAL, 1);
+        
+      double sk0 = iStochastic(symbol, PERIOD_M5, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 0);
+      double sd0 = iStochastic(symbol, PERIOD_M5, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 0);
+      double sk1 = iStochastic(symbol, PERIOD_M5, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 1);
+      double sd1 = iStochastic(symbol, PERIOD_M5, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 1);
+      
+      double m15_sk0 = iStochastic(symbol, period, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 0);
+      double m15_sd0 = iStochastic(symbol, period, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 0);
+      double m15_sk1 = iStochastic(symbol, period, 14, 3, 3, MODE_SMA, 0, MODE_MAIN, 1);
+      double m15_sd1 = iStochastic(symbol, period, 14, 3, 3, MODE_SMA, 0, MODE_SIGNAL, 1);
 
-      if (actiontype == OP_BUY && (macdm < macdm1 || macdm < macds - 1))
+      if (actiontype == OP_BUY)
       {
-         return false;
+         if (m15_sk0 < 15 && m15_sk1 < 15)
+            return false;
+         if (!(sk0 > sk1)
+            &&
+            !(macdm1 < macds1 && macdm > macds)
+            ) {
+            Print("sk protection _::: BUY");
+            return false;
+         }
+         if (((macds > macdm && macdm >= -0.5) 
+            || (macds - 1 > macdm && macdm < -0.5 && macdm < macdm1) 
+            || (macdm1 > macds1 && macdm < macds)
+            &&
+            !(macdm1 < macds1 && macdm > macds))
+         ) {
+            Print("macd protection _::: BUY");
+            return false;
+         }
+         if (imfi < 60 && imfi < imfi1 
+         &&
+            !(macdm1 < macds1 && macdm > macds)
+            ) {
+            Print("mfi protection _::: BUY");
+            return false;
+         }
       }
-      if (actiontype == OP_SELL && (macdm > macdm1 || macdm - 1 > macds))
+      if (actiontype == OP_SELL)
       {
-         return false;
+         if (m15_sk0 > 85 && m15_sk1 > 85)
+            return false;
+         if (!(sk0 < sk1)
+            &&
+            !(macdm1 > macds1 && macdm < macds)
+         ) {
+            Print("sk protection _::: SELL sk0 : " + sk0 + " sk1: " + sk1);
+            return false;
+         }
+         if ((macdm - macds > 1 || macdm < -0.5)
+            || (macdm - 1 > macds && macdm > 0.5 && macdm > macdm1) 
+            || (macdm1 < macds1 && macdm > macds)
+            &&
+            !(macdm1 > macds1 && macdm < macds))
+         
+          {
+            Print("macd protection _::: SELL");
+            return false;
+         }
       }
 
-        if (cprice > maend + iatr * 0.15 && (maend - mastart) < 1)
+
+        if (actiontype == OP_SELL
+            && cprice > maend + iatr * 0.18
+             && (maend - mastart) < 1)
         {
+            Print("Go recovery :: SELL");
             return true;
         }
         //else if (cprice < maend - iatr * 0.25 && (maend - mastart) > -1)
-        else if (cprice < maend - iatr * 0.15 && (maend - mastart) > -1)
+        else if (actiontype == OP_BUY
+                  && cprice < maend - iatr * 0.18
+                   && (maend - mastart) > -1)
         {
+            Print("Go recovery :: BUY");
             return true;
         }
         return false;
@@ -313,7 +395,7 @@ int SenKouSpanB;
         Print("wilsonNewMartingaleLotsizeCalculation " + martingaletype);
         if (martingaletype == 1)
         {
-            ntlots =  initlots + initlotstep + torder * lotincrease_step;
+            ntlots =  initlots + initlotstep + (torder - 1) * (torder * lotincrease_step + initlotstep);
         }
         else if (martingaletype == 2)
         {

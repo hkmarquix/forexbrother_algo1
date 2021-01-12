@@ -227,7 +227,7 @@ class MTradeHelper : public TradeHelper {
             martin.magicNumber = magicNumber;
             martin.curzone = curzone;
             martin.currecover = currecover;
-            //martin.takeProfit();
+            martin.takeProfit();
             int res = martin.doRecovery();
             if (res == 2)
             {
